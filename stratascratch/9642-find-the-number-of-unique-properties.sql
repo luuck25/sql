@@ -919,7 +919,7 @@ COMPLETE EXAMPLES
 -- Spark SQL:
 SELECT transform(prices, x -> x * 1.1) AS prices_with_tax FROM products;
 
-/*
+
 PySpark:
 --------
 from pyspark.sql import functions as F
@@ -975,6 +975,6 @@ Example - Same operation:
     PySpark: df.select(F.col("name"), F.upper(F.col("city")))
     Scala:   df.select(col("name"), upper(col("city")))
     Scala:   df.select($"name", upper($"city"))  // using $ shorthand
-*/
+
 
 
