@@ -867,29 +867,114 @@ COLLECT (Aggregate to Array):
 
 
 -- ============================================================================
--- 🔄 PYSPARK DATAFRAME API EQUIVALENTS
+-- 🔄 PYSPARK & SPARK SCALA DATAFRAME API EQUIVALENTS
 -- ============================================================================
 /*
-All functions available via: from pyspark.sql import functions as F
+All functions available via:
+    PySpark: from pyspark.sql import functions as F
+    Scala:   import org.apache.spark.sql.functions._
 
-| Spark SQL                | PySpark DataFrame API                      |
-|--------------------------|--------------------------------------------|
-| array(1, 2, 3)           | F.array(F.lit(1), F.lit(2), F.lit(3))      |
-| element_at(arr, 2)       | F.element_at("arr", 2)                     |
-| array_contains(arr, v)   | F.array_contains("arr", v)                 |
-| size(arr)                | F.size("arr")                              |
-| array_distinct(arr)      | F.array_distinct("arr")                    |
-| array_sort(arr)          | F.array_sort("arr")                        |
-| array_union(a, b)        | F.array_union("a", "b")                    |
-| array_intersect(a, b)    | F.array_intersect("a", "b")                |
-| array_except(a, b)       | F.array_except("a", "b")                   |
-| flatten(arr)             | F.flatten("arr")                           |
-| transform(arr, x -> ...) | F.transform("arr", lambda x: ...)          |
-| filter(arr, x -> ...)    | F.filter("arr", lambda x: ...)             |
-| aggregate(...)           | F.aggregate(...)                           |
-| sequence(1, 10)          | F.sequence(F.lit(1), F.lit(10))            |
-| array_min(arr)           | F.array_min("arr")                         |
-| array_max(arr)           | F.array_max("arr")                         |
+--------------------------------------------------------------------------------
+SPARK SQL vs PYSPARK vs SCALA
+--------------------------------------------------------------------------------
+
+| Spark SQL                | PySpark DataFrame API                      | Scala DataFrame API                        |
+|--------------------------|--------------------------------------------|--------------------------------------------|
+| array(1, 2, 3)           | F.array(F.lit(1), F.lit(2), F.lit(3))      | array(lit(1), lit(2), lit(3))              |
+| element_at(arr, 2)       | F.element_at("arr", 2)                     | element_at(col("arr"), 2)                  |
+| array_contains(arr, v)   | F.array_contains("arr", v)                 | array_contains(col("arr"), v)              |
+| size(arr)                | F.size("arr")                              | size(col("arr"))                           |
+| array_distinct(arr)      | F.array_distinct("arr")                    | array_distinct(col("arr"))                 |
+| array_sort(arr)          | F.array_sort("arr")                        | array_sort(col("arr"))                     |
+| array_union(a, b)        | F.array_union("a", "b")                    | array_union(col("a"), col("b"))            |
+| array_intersect(a, b)    | F.array_intersect("a", "b")                | array_intersect(col("a"), col("b"))        |
+| array_except(a, b)       | F.array_except("a", "b")                   | array_except(col("a"), col("b"))           |
+| flatten(arr)             | F.flatten("arr")                           | flatten(col("arr"))                        |
+| explode(arr)             | F.explode("arr")                           | explode(col("arr"))                        |
+| posexplode(arr)          | F.posexplode("arr")                        | posexplode(col("arr"))                     |
+| collect_list(col)        | F.collect_list("col")                      | collect_list(col("col"))                   |
+| collect_set(col)         | F.collect_set("col")                       | collect_set(col("col"))                    |
+| sequence(1, 10)          | F.sequence(F.lit(1), F.lit(10))            | sequence(lit(1), lit(10))                  |
+| array_min(arr)           | F.array_min("arr")                         | array_min(col("arr"))                      |
+| array_max(arr)           | F.array_max("arr")                         | array_max(col("arr"))                      |
+
+--------------------------------------------------------------------------------
+HIGHER-ORDER FUNCTIONS
+--------------------------------------------------------------------------------
+
+| Spark SQL                    | PySpark                                    | Scala                                      |
+|------------------------------|--------------------------------------------|--------------------------------------------|
+| transform(arr, x -> x*2)     | F.transform("arr", lambda x: x * 2)        | transform(col("arr"), x => x * 2)          |
+| filter(arr, x -> x > 0)      | F.filter("arr", lambda x: x > 0)           | filter(col("arr"), x => x > 0)             |
+| aggregate(arr, 0, (a,x)->a+x)| F.aggregate("arr", F.lit(0), lambda a,x: a+x)| aggregate(col("arr"), lit(0), (a,x) => a+x)|
+| exists(arr, x -> x > 5)      | F.exists("arr", lambda x: x > 5)           | exists(col("arr"), x => x > 5)             |
+| forall(arr, x -> x > 0)      | F.forall("arr", lambda x: x > 0)           | forall(col("arr"), x => x > 0)             |
+| zip_with(a, b, (x,y)->x+y)   | F.zip_with("a", "b", lambda x,y: x+y)      | zip_with(col("a"), col("b"), (x,y) => x+y) |
+
+--------------------------------------------------------------------------------
+COMPLETE EXAMPLES
+--------------------------------------------------------------------------------
+*/
+
+-- Spark SQL:
+SELECT transform(prices, x -> x * 1.1) AS prices_with_tax FROM products;
+
+/*
+PySpark:
+--------
+from pyspark.sql import functions as F
+
+df.select(
+    F.transform("prices", lambda x: x * 1.1).alias("prices_with_tax")
+)
+
+df.select(F.explode("items").alias("item"))
+
+df.groupBy("user_id").agg(
+    F.collect_list("room_type").alias("all_rooms")
+)
+
+df.select(
+    F.filter("numbers", lambda x: x > 0).alias("positives")
+)
+
+
+Scala:
+------
+import org.apache.spark.sql.functions._
+
+df.select(
+    transform(col("prices"), x => x * 1.1).alias("prices_with_tax")
+)
+
+df.select(explode(col("items")).alias("item"))
+
+df.groupBy("user_id").agg(
+    collect_list(col("room_type")).alias("all_rooms")
+)
+
+df.select(
+    filter(col("numbers"), x => x > 0).alias("positives")
+)
+
+
+--------------------------------------------------------------------------------
+KEY DIFFERENCES: PySpark vs Scala
+--------------------------------------------------------------------------------
+
+| Aspect              | PySpark                          | Scala                              |
+|---------------------|----------------------------------|------------------------------------|
+| Import              | from pyspark.sql import functions as F | import org.apache.spark.sql.functions._ |
+| Prefix              | F.function_name()                | function_name() (no prefix)        |
+| Column reference    | F.col("name") or "name"          | col("name") or $"name"             |
+| Lambda syntax       | lambda x: x * 2                  | x => x * 2                         |
+| Literal values      | F.lit(value)                     | lit(value)                         |
+| String to column    | Implicit in many functions       | Must use col() or $                |
+
+Example - Same operation:
+    PySpark: df.select(F.col("name"), F.upper(F.col("city")))
+    Scala:   df.select(col("name"), upper(col("city")))
+    Scala:   df.select($"name", upper($"city"))  // using $ shorthand
 */
 
 
