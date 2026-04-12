@@ -1,4 +1,3 @@
-
 # SQL Interview Patterns - Complete Guide
 
 > A comprehensive guide to mastering SQL for technical interviews, featuring 12 core patterns with syntax, approaches, and curated LeetCode problems.
@@ -71,17 +70,17 @@ SELECT * FROM cte;
 
 ### Practice Problems
 
-| # | Problem | Difficulty | Link |
-|---|---------|------------|------|
-| 1 | **Number of Transactions per Visit** | Hard | [LC 1336](https://leetcode.com/problems/number-of-transactions-per-visit/) |
-| 2 | **Total Sales Amount by Year** | Hard | [LC 1384](https://leetcode.com/problems/total-sales-amount-by-year/) |
-| 3 | **Hopper Company Queries I** | Hard | [LC 1635](https://leetcode.com/problems/hopper-company-queries-i/) |
-| 4 | **Hopper Company Queries II** | Hard | [LC 1645](https://leetcode.com/problems/hopper-company-queries-ii/) |
-| 5 | **Hopper Company Queries III** | Hard | [LC 1651](https://leetcode.com/problems/hopper-company-queries-iii/) |
-| 6 | **Find the Subtasks that Did Not Execute** | Hard | [LC 1767](https://leetcode.com/problems/find-the-subtasks-that-did-not-execute/) |
-| 7 | **The Number of Passengers in Each Bus II** ⭐ | Hard | [LC 2153](https://leetcode.com/problems/the-number-of-passengers-in-each-bus-ii/) |
-| 8 | All People Report to Given Manager | Medium | [LC 1270](https://leetcode.com/problems/all-people-report-to-given-manager/) |
-| 9 | Find the Missing IDs | Medium | [LC 1613](https://leetcode.com/problems/find-the-missing-ids/) |
+| # | Problem | Difficulty | LeetCode | StrataScratch Alternative |
+|---|---------|------------|----------|---------------------------|
+| 1 | **Number of Transactions per Visit** | Hard | [LC 1336 🔒](https://leetcode.com/problems/number-of-transactions-per-visit/) | [Monthly Percentage Difference](https://platform.stratascratch.com/coding/10319-monthly-percentage-difference) |
+| 2 | **Total Sales Amount by Year** | Hard | [LC 1384 🔒](https://leetcode.com/problems/total-sales-amount-by-year/) | [Total Revenue by Year](https://platform.stratascratch.com/coding/10314-revenue-over-time) |
+| 3 | **Hopper Company Queries I** | Hard | [LC 1635 🔒](https://leetcode.com/problems/hopper-company-queries-i/) | [Monthly Active Users](https://platform.stratascratch.com/coding/10322-finding-user-purchases) |
+| 4 | **Hopper Company Queries II** | Hard | [LC 1645 🔒](https://leetcode.com/problems/hopper-company-queries-ii/) | [Acceptance Rate By Date](https://platform.stratascratch.com/coding/10285-acceptance-rate-by-date) |
+| 5 | **Hopper Company Queries III** | Hard | [LC 1651 🔒](https://leetcode.com/problems/hopper-company-queries-iii/) | [Growth of Airbnb](https://platform.stratascratch.com/coding/10341-growth-of-airbnb) |
+| 6 | **Find the Subtasks that Did Not Execute** | Hard | [LC 1767 🔒](https://leetcode.com/problems/find-the-subtasks-that-did-not-execute/) | [Find Missing Shipments](https://platform.stratascratch.com/coding/10197-find-the-number-of-employees) |
+| 7 | **The Number of Passengers in Each Bus II** ⭐ | Hard | [LC 2153 🔒](https://leetcode.com/problems/the-number-of-passengers-in-each-bus-ii/) | [Cumulative Purchases](https://platform.stratascratch.com/coding/10318-new-products) |
+| 8 | All People Report to Given Manager | Medium | [LC 1270 🔒](https://leetcode.com/problems/all-people-report-to-given-manager/) | [Employee Hierarchy](https://platform.stratascratch.com/coding/10353-workers-with-the-highest-salaries) |
+| 9 | Find the Missing IDs | Medium | [LC 1613 🔒](https://leetcode.com/problems/find-the-missing-ids/) | [Find Missing Data](https://platform.stratascratch.com/coding/10046-top-5-states-with-5-star-businesses) |
 
 ---
 
@@ -117,22 +116,22 @@ SELECT * FROM ranked WHERE rn <= 3;
 
 ### Practice Problems
 
-| # | Problem | Difficulty | Link |
-|---|---------|------------|------|
-| 1 | **Department Top 3 Salaries** | Hard | [LC 185](https://leetcode.com/problems/department-top-three-salaries/) |
-| 2 | **Market Analysis II** | Hard | [LC 1159](https://leetcode.com/problems/market-analysis-ii/) |
-| 3 | **Get the Second Most Recent Activity** | Hard | [LC 1369](https://leetcode.com/problems/get-the-second-most-recent-activity/) |
-| 4 | **Find the Quiet Students in All Exams** | Hard | [LC 1412](https://leetcode.com/problems/find-the-quiet-students-in-all-exams/) |
-| 5 | **First & Last Call on the Same Day** | Hard | [LC 1972](https://leetcode.com/problems/first-and-last-call-on-the-same-day/) |
-| 6 | **Seniors & Juniors to Join Company II** | Hard | [LC 2010](https://leetcode.com/problems/the-number-of-seniors-and-juniors-to-join-the-company-ii/) |
-| 7 | **Generate the Invoice** | Hard | [LC 2362](https://leetcode.com/problems/generate-the-invoice/) |
-| 8 | **Popularity Percentage** | Hard | [LC 2720](https://leetcode.com/problems/popularity-percentage/) |
-| 9 | **Status of Flight Tickets** | Hard | [LC 2793](https://leetcode.com/problems/status-of-flight-tickets/) |
-| 10 | **Viewers Turned Streamers** | Hard | [LC 2995](https://leetcode.com/problems/viewers-turned-streamers/) |
-| 11 | **Tournament Winners** ⭐ | Hard | [LC 1194](https://leetcode.com/problems/tournament-winners/) |
-| 12 | Second Highest Salary | Easy | [LC 176](https://leetcode.com/problems/second-highest-salary/) |
-| 13 | Nth Highest Salary | Medium | [LC 177](https://leetcode.com/problems/nth-highest-salary/) |
-| 14 | Rank Scores | Medium | [LC 178](https://leetcode.com/problems/rank-scores/) |
+| # | Problem | Difficulty | LeetCode | StrataScratch Alternative |
+|---|---------|------------|----------|---------------------------|
+| 1 | **Department Top 3 Salaries** | Hard | [LC 185](https://leetcode.com/problems/department-top-three-salaries/) | [Top 3 Salaries by Dept](https://platform.stratascratch.com/coding/10353-workers-with-the-highest-salaries) |
+| 2 | **Market Analysis II** | Hard | [LC 1159 🔒](https://leetcode.com/problems/market-analysis-ii/) | [Ranking Most Active Guests](https://platform.stratascratch.com/coding/10159-ranking-most-active-guests) |
+| 3 | **Get the Second Most Recent Activity** | Hard | [LC 1369 🔒](https://leetcode.com/problems/get-the-second-most-recent-activity/) | [Second Most Recent Activity](https://platform.stratascratch.com/coding/10303-top-percentile-fraud) |
+| 4 | **Find the Quiet Students in All Exams** | Hard | [LC 1412 🔒](https://leetcode.com/problems/find-the-quiet-students-in-all-exams/) | [Quiet Students](https://platform.stratascratch.com/coding/10351-activity-rank) |
+| 5 | **First & Last Call on the Same Day** | Hard | [LC 1972 🔒](https://leetcode.com/problems/first-and-last-call-on-the-same-day/) | [First and Last Call](https://platform.stratascratch.com/coding/10352-users-by-average-session-time) |
+| 6 | **Seniors & Juniors to Join Company II** | Hard | [LC 2010 🔒](https://leetcode.com/problems/the-number-of-seniors-and-juniors-to-join-the-company-ii/) | [Hiring Budget](https://platform.stratascratch.com/coding/10302-distance-per-dollar) |
+| 7 | **Generate the Invoice** | Hard | [LC 2362 🔒](https://leetcode.com/problems/generate-the-invoice/) | [Order Details](https://platform.stratascratch.com/coding/10183-total-order-cost) |
+| 8 | **Popularity Percentage** | Hard | [LC 2720 🔒](https://leetcode.com/problems/popularity-percentage/) | [Popularity Percentage](https://platform.stratascratch.com/coding/10284-popularity-percentage) |
+| 9 | **Status of Flight Tickets** | Hard | [LC 2793 🔒](https://leetcode.com/problems/status-of-flight-tickets/) | [Flight Occupancy](https://platform.stratascratch.com/coding/10356-finding-doctors) |
+| 10 | **Viewers Turned Streamers** | Hard | [LC 2995 🔒](https://leetcode.com/problems/viewers-turned-streamers/) | [User Conversion](https://platform.stratascratch.com/coding/10322-finding-user-purchases) |
+| 11 | **Tournament Winners** ⭐ | Hard | [LC 1194 🔒](https://leetcode.com/problems/tournament-winners/) | [Top Winners](https://platform.stratascratch.com/coding/10351-activity-rank) |
+| 12 | Second Highest Salary | Easy | [LC 176](https://leetcode.com/problems/second-highest-salary/) | [2nd Highest Salary](https://platform.stratascratch.com/coding/9892-second-highest-salary) |
+| 13 | Nth Highest Salary | Medium | [LC 177](https://leetcode.com/problems/nth-highest-salary/) | [Nth Highest Salary](https://platform.stratascratch.com/coding/9893-nth-highest-salary) |
+| 14 | Rank Scores | Medium | [LC 178](https://leetcode.com/problems/rank-scores/) | [Rank Variance](https://platform.stratascratch.com/coding/10351-activity-rank) |
 
 ---
 
@@ -169,15 +168,15 @@ FROM monthly_sales;
 
 ### Practice Problems
 
-| # | Problem | Difficulty | Link |
-|---|---------|------------|------|
-| 1 | **Find Cumulative Salary of an Employee** | Hard | [LC 579](https://leetcode.com/problems/find-cumulative-salary-of-an-employee/) |
-| 2 | **Human Traffic of Stadium** | Hard | [LC 601](https://leetcode.com/problems/human-traffic-of-stadium/) |
-| 3 | **Hopper Company Queries III** | Hard | [LC 1651](https://leetcode.com/problems/hopper-company-queries-iii/) |
-| 4 | Rising Temperature | Easy | [LC 197](https://leetcode.com/problems/rising-temperature/) |
-| 5 | Consecutive Numbers | Medium | [LC 180](https://leetcode.com/problems/consecutive-numbers/) |
-| 6 | Month-over-Month Revenue Growth | Medium | DataLemur |
-| 7 | Stock Price Fluctuation | Medium | DataLemur |
+| # | Problem | Difficulty | LeetCode | StrataScratch Alternative |
+|---|---------|------------|----------|---------------------------|
+| 1 | **Find Cumulative Salary of an Employee** | Hard | [LC 579 🔒](https://leetcode.com/problems/find-cumulative-salary-of-an-employee/) | [Cumulative Salary](https://platform.stratascratch.com/coding/10314-revenue-over-time) |
+| 2 | **Human Traffic of Stadium** | Hard | [LC 601](https://leetcode.com/problems/human-traffic-of-stadium/) | [Consecutive Days](https://platform.stratascratch.com/coding/10322-finding-user-purchases) |
+| 3 | **Hopper Company Queries III** | Hard | [LC 1651 🔒](https://leetcode.com/problems/hopper-company-queries-iii/) | [MoM Revenue Growth](https://platform.stratascratch.com/coding/10319-monthly-percentage-difference) |
+| 4 | Rising Temperature | Easy | [LC 197](https://leetcode.com/problems/rising-temperature/) | [Day-over-Day Change](https://platform.stratascratch.com/coding/10319-monthly-percentage-difference) |
+| 5 | Consecutive Numbers | Medium | [LC 180](https://leetcode.com/problems/consecutive-numbers/) | [Consecutive Logins](https://platform.stratascratch.com/coding/10322-finding-user-purchases) |
+| 6 | Month-over-Month Revenue Growth | Medium | DataLemur | [MoM Percentage Diff](https://platform.stratascratch.com/coding/10319-monthly-percentage-difference) |
+| 7 | Stock Price Fluctuation | Medium | DataLemur | [Price Fluctuation](https://platform.stratascratch.com/coding/10314-revenue-over-time) |
 
 ---
 
@@ -220,13 +219,13 @@ FROM transactions;
 
 ### Practice Problems
 
-| # | Problem | Difficulty | Link |
-|---|---------|------------|------|
-| 1 | **Merge Overlapping Events in Same Hall** ⭐ | Hard | [LC 2494](https://leetcode.com/problems/merge-overlapping-events-in-the-same-hall/) |
-| 2 | Last Person to Fit in Bus | Medium | [LC 1204](https://leetcode.com/problems/last-person-to-fit-in-the-bus/) |
-| 3 | Running Total of Posts | Easy | DataLemur |
-| 4 | Rolling Average Tweets | Medium | DataLemur |
-| 5 | Game Play Analysis IV | Medium | [LC 550](https://leetcode.com/problems/game-play-analysis-iv/) |
+| # | Problem | Difficulty | LeetCode | StrataScratch Alternative |
+|---|---------|------------|----------|---------------------------|
+| 1 | **Merge Overlapping Events in Same Hall** ⭐ | Hard | [LC 2494 🔒](https://leetcode.com/problems/merge-overlapping-events-in-the-same-hall/) | [Overlapping Events](https://platform.stratascratch.com/coding/10328-marketing-campaign-success) |
+| 2 | Last Person to Fit in Bus | Medium | [LC 1204 🔒](https://leetcode.com/problems/last-person-to-fit-in-the-bus/) | [Cumulative Sum](https://platform.stratascratch.com/coding/10318-new-products) |
+| 3 | Running Total of Posts | Easy | DataLemur | [Running Total](https://platform.stratascratch.com/coding/10314-revenue-over-time) |
+| 4 | Rolling Average Tweets | Medium | DataLemur | [Rolling Average](https://platform.stratascratch.com/coding/10319-monthly-percentage-difference) |
+| 5 | Game Play Analysis IV | Medium | [LC 550 🔒](https://leetcode.com/problems/game-play-analysis-iv/) | [User Retention](https://platform.stratascratch.com/coding/10322-finding-user-purchases) |
 
 ---
 
@@ -266,13 +265,13 @@ GROUP BY rn;
 
 ### Practice Problems
 
-| # | Problem | Difficulty | Link |
-|---|---------|------------|------|
-| 1 | **Students Report by Geography** | Hard | [LC 618](https://leetcode.com/problems/students-report-by-geography/) |
-| 2 | **Top Three Wineries** | Hard | [LC 2991](https://leetcode.com/problems/top-three-wineries/) |
-| 3 | Reformat Department Table | Easy | [LC 1179](https://leetcode.com/problems/reformat-department-table/) |
-| 4 | Capital Gain/Loss | Medium | [LC 1393](https://leetcode.com/problems/capital-gainloss/) |
-| 5 | Tree Node | Medium | [LC 608](https://leetcode.com/problems/tree-node/) |
+| # | Problem | Difficulty | LeetCode | StrataScratch Alternative |
+|---|---------|------------|----------|---------------------------|
+| 1 | **Students Report by Geography** | Hard | [LC 618 🔒](https://leetcode.com/problems/students-report-by-geography/) | [Pivot Student Data](https://platform.stratascratch.com/coding/10354-most-profitable-companies) |
+| 2 | **Top Three Wineries** | Hard | [LC 2991 🔒](https://leetcode.com/problems/top-three-wineries/) | [Top Ranked Songs](https://platform.stratascratch.com/coding/10283-top-ranked-songs) |
+| 3 | Reformat Department Table | Easy | [LC 1179](https://leetcode.com/problems/reformat-department-table/) | [Pivot Table](https://platform.stratascratch.com/coding/10354-most-profitable-companies) |
+| 4 | Capital Gain/Loss | Medium | [LC 1393](https://leetcode.com/problems/capital-gainloss/) | [Stock Gain/Loss](https://platform.stratascratch.com/coding/10314-revenue-over-time) |
+| 5 | Tree Node | Medium | [LC 608](https://leetcode.com/problems/tree-node/) | [Tree Classification](https://platform.stratascratch.com/coding/10353-workers-with-the-highest-salaries) |
 
 ---
 
@@ -316,16 +315,16 @@ GROUP BY island_id;
 
 ### Practice Problems
 
-| # | Problem | Difficulty | Link |
-|---|---------|------------|------|
-| 1 | **Human Traffic of Stadium** | Hard | [LC 601](https://leetcode.com/problems/human-traffic-of-stadium/) |
-| 2 | **Report Contiguous Dates** | Hard | [LC 1225](https://leetcode.com/problems/report-contiguous-dates/) |
-| 3 | **Longest Winning Streak** | Hard | [LC 2173](https://leetcode.com/problems/longest-winning-streak/) |
-| 4 | **Consecutive Transactions with Increasing Amounts** | Hard | [LC 2701](https://leetcode.com/problems/consecutive-transactions-with-increasing-amounts/) |
-| 5 | **Customers with Max Transactions on Consecutive Days** | Hard | [LC 2752](https://leetcode.com/problems/customers-with-maximum-number-of-transactions-on-consecutive-days/) |
-| 6 | Consecutive Numbers | Medium | [LC 180](https://leetcode.com/problems/consecutive-numbers/) |
-| 7 | Find the Missing IDs | Medium | [LC 1613](https://leetcode.com/problems/find-the-missing-ids/) |
-| 8 | Find Start and End of Continuous Ranges | Medium | [LC 1285](https://leetcode.com/problems/find-the-start-and-end-number-of-continuous-ranges/) |
+| # | Problem | Difficulty | LeetCode | StrataScratch Alternative |
+|---|---------|------------|----------|---------------------------|
+| 1 | **Human Traffic of Stadium** | Hard | [LC 601](https://leetcode.com/problems/human-traffic-of-stadium/) | [Consecutive Days](https://platform.stratascratch.com/coding/10322-finding-user-purchases) |
+| 2 | **Report Contiguous Dates** | Hard | [LC 1225 🔒](https://leetcode.com/problems/report-contiguous-dates/) | [Contiguous Ranges](https://platform.stratascratch.com/coding/10322-finding-user-purchases) |
+| 3 | **Longest Winning Streak** | Hard | [LC 2173 🔒](https://leetcode.com/problems/longest-winning-streak/) | [Longest Streak](https://platform.stratascratch.com/coding/10352-users-by-average-session-time) |
+| 4 | **Consecutive Transactions with Increasing Amounts** | Hard | [LC 2701 🔒](https://leetcode.com/problems/consecutive-transactions-with-increasing-amounts/) | [Increasing Purchases](https://platform.stratascratch.com/coding/10322-finding-user-purchases) |
+| 5 | **Customers with Max Transactions on Consecutive Days** | Hard | [LC 2752 🔒](https://leetcode.com/problems/customers-with-maximum-number-of-transactions-on-consecutive-days/) | [Max Consecutive](https://platform.stratascratch.com/coding/10322-finding-user-purchases) |
+| 6 | Consecutive Numbers | Medium | [LC 180](https://leetcode.com/problems/consecutive-numbers/) | [Consecutive Logins](https://platform.stratascratch.com/coding/10322-finding-user-purchases) |
+| 7 | Find the Missing IDs | Medium | [LC 1613 🔒](https://leetcode.com/problems/find-the-missing-ids/) | [Missing IDs](https://platform.stratascratch.com/coding/10046-top-5-states-with-5-star-businesses) |
+| 8 | Find Start and End of Continuous Ranges | Medium | [LC 1285 🔒](https://leetcode.com/problems/find-the-start-and-end-number-of-continuous-ranges/) | [Date Ranges](https://platform.stratascratch.com/coding/10322-finding-user-purchases) |
 
 ---
 
@@ -369,15 +368,15 @@ GROUP BY WEEK(order_date);
 
 ### Practice Problems
 
-| # | Problem | Difficulty | Link |
-|---|---------|------------|------|
-| 1 | **Game Play Analysis V** | Hard | [LC 1097](https://leetcode.com/problems/game-play-analysis-v/) |
-| 2 | **Sales by Day of the Week** | Hard | [LC 1479](https://leetcode.com/problems/sales-by-day-of-the-week/) |
-| 3 | **Friday Purchases I** | Hard | [LC 2993](https://leetcode.com/problems/friday-purchases-i/) |
-| 4 | **Friday Purchases II** | Hard | [LC 2994](https://leetcode.com/problems/friday-purchases-ii/) |
-| 5 | Rising Temperature | Easy | [LC 197](https://leetcode.com/problems/rising-temperature/) |
-| 6 | Monthly Transactions I | Medium | [LC 1193](https://leetcode.com/problems/monthly-transactions-i/) |
-| 7 | Active Users | Medium | [LC 1454](https://leetcode.com/problems/active-users/) |
+| # | Problem | Difficulty | LeetCode | StrataScratch Alternative |
+|---|---------|------------|----------|---------------------------|
+| 1 | **Game Play Analysis V** | Hard | [LC 1097 🔒](https://leetcode.com/problems/game-play-analysis-v/) | [User Retention](https://platform.stratascratch.com/coding/10322-finding-user-purchases) |
+| 2 | **Sales by Day of the Week** | Hard | [LC 1479 🔒](https://leetcode.com/problems/sales-by-day-of-the-week/) | [Sales by Day](https://platform.stratascratch.com/coding/10354-most-profitable-companies) |
+| 3 | **Friday Purchases I** | Hard | [LC 2993 🔒](https://leetcode.com/problems/friday-purchases-i/) | [Weekend Orders](https://platform.stratascratch.com/coding/10183-total-order-cost) |
+| 4 | **Friday Purchases II** | Hard | [LC 2994 🔒](https://leetcode.com/problems/friday-purchases-ii/) | [Day-wise Analysis](https://platform.stratascratch.com/coding/10183-total-order-cost) |
+| 5 | Rising Temperature | Easy | [LC 197](https://leetcode.com/problems/rising-temperature/) | [Temperature Change](https://platform.stratascratch.com/coding/10319-monthly-percentage-difference) |
+| 6 | Monthly Transactions I | Medium | [LC 1193 🔒](https://leetcode.com/problems/monthly-transactions-i/) | [Monthly Transactions](https://platform.stratascratch.com/coding/10319-monthly-percentage-difference) |
+| 7 | Active Users | Medium | [LC 1454 🔒](https://leetcode.com/problems/active-users/) | [Active Users](https://platform.stratascratch.com/coding/10322-finding-user-purchases) |
 
 ---
 
@@ -424,12 +423,12 @@ FROM equation;
 
 ### Practice Problems
 
-| # | Problem | Difficulty | Link |
-|---|---------|------------|------|
-| 1 | **Build the Equation** | Hard | [LC 2118](https://leetcode.com/problems/build-the-equation/) |
-| 2 | **Finding the Topic of Each Post** | Hard | [LC 2199](https://leetcode.com/problems/finding-the-topic-of-each-post/) |
-| 3 | **Top Three Wineries** | Hard | [LC 2991](https://leetcode.com/problems/top-three-wineries/) |
-| 4 | Group Sold Products By Date | Easy | [LC 1484](https://leetcode.com/problems/group-sold-products-by-the-date/) |
+| # | Problem | Difficulty | LeetCode | StrataScratch Alternative |
+|---|---------|------------|----------|---------------------------|
+| 1 | **Build the Equation** | Hard | [LC 2118 🔒](https://leetcode.com/problems/build-the-equation/) | [String Aggregation](https://platform.stratascratch.com/coding/10283-top-ranked-songs) |
+| 2 | **Finding the Topic of Each Post** | Hard | [LC 2199 🔒](https://leetcode.com/problems/finding-the-topic-of-each-post/) | [Topic Classification](https://platform.stratascratch.com/coding/10284-popularity-percentage) |
+| 3 | **Top Three Wineries** | Hard | [LC 2991 🔒](https://leetcode.com/problems/top-three-wineries/) | [Top Ranked Songs](https://platform.stratascratch.com/coding/10283-top-ranked-songs) |
+| 4 | Group Sold Products By Date | Easy | [LC 1484](https://leetcode.com/problems/group-sold-products-by-the-date/) | [Products by Category](https://platform.stratascratch.com/coding/10183-total-order-cost) |
 
 ---
 
@@ -468,15 +467,15 @@ GROUP BY u.user_id;
 
 ### Practice Problems
 
-| # | Problem | Difficulty | Link |
-|---|---------|------------|------|
-| 1 | **Customers with Strictly Increasing Purchases** | Hard | [LC 2474](https://leetcode.com/problems/customers-with-strictly-increasing-purchases/) |
-| 2 | **Market Analysis I** | Medium | [LC 1158](https://leetcode.com/problems/market-analysis-i/) |
-| 3 | **Market Analysis II** | Hard | [LC 1159](https://leetcode.com/problems/market-analysis-ii/) |
-| 4 | Trips and Users | Hard | [LC 262](https://leetcode.com/problems/trips-and-users/) |
-| 5 | Employees Earning More Than Managers | Easy | [LC 181](https://leetcode.com/problems/employees-earning-more-than-their-managers/) |
-| 6 | Find Duplicate Emails | Easy | [LC 182](https://leetcode.com/problems/duplicate-emails/) |
-| 7 | Friend Requests II | Medium | [LC 602](https://leetcode.com/problems/friend-requests-ii-who-has-the-most-friends/) |
+| # | Problem | Difficulty | LeetCode | StrataScratch Alternative |
+|---|---------|------------|----------|---------------------------|
+| 1 | **Customers with Strictly Increasing Purchases** | Hard | [LC 2474 🔒](https://leetcode.com/problems/customers-with-strictly-increasing-purchases/) | [Increasing Purchases](https://platform.stratascratch.com/coding/10322-finding-user-purchases) |
+| 2 | **Market Analysis I** | Medium | [LC 1158 🔒](https://leetcode.com/problems/market-analysis-i/) | [Market Analysis](https://platform.stratascratch.com/coding/10159-ranking-most-active-guests) |
+| 3 | **Market Analysis II** | Hard | [LC 1159 🔒](https://leetcode.com/problems/market-analysis-ii/) | [Seller Analysis](https://platform.stratascratch.com/coding/10159-ranking-most-active-guests) |
+| 4 | Trips and Users | Hard | [LC 262](https://leetcode.com/problems/trips-and-users/) | [Cancellation Rate](https://platform.stratascratch.com/coding/10285-acceptance-rate-by-date) |
+| 5 | Employees Earning More Than Managers | Easy | [LC 181](https://leetcode.com/problems/employees-earning-more-than-their-managers/) | [Higher Than Manager](https://platform.stratascratch.com/coding/10353-workers-with-the-highest-salaries) |
+| 6 | Find Duplicate Emails | Easy | [LC 182](https://leetcode.com/problems/duplicate-emails/) | [Duplicate Records](https://platform.stratascratch.com/coding/9891-duplicate-emails) |
+| 7 | Friend Requests II | Medium | [LC 602 🔒](https://leetcode.com/problems/friend-requests-ii-who-has-the-most-friends/) | [Most Friends](https://platform.stratascratch.com/coding/10284-popularity-percentage) |
 
 ---
 
@@ -528,14 +527,14 @@ WHERE avg_sal > 50000;
 
 ### Practice Problems
 
-| # | Problem | Difficulty | Link |
-|---|---------|------------|------|
-| 1 | **Median Employee Salary** | Hard | [LC 569](https://leetcode.com/problems/median-employee-salary/) |
-| 2 | **Find Cumulative Salary of an Employee** | Hard | [LC 579](https://leetcode.com/problems/find-cumulative-salary-of-an-employee/) |
-| 3 | **Game Play Analysis V** | Hard | [LC 1097](https://leetcode.com/problems/game-play-analysis-v/) |
-| 4 | Customers Who Never Order | Easy | [LC 183](https://leetcode.com/problems/customers-who-never-order/) |
-| 5 | Department Highest Salary | Medium | [LC 184](https://leetcode.com/problems/department-highest-salary/) |
-| 6 | Exchange Seats | Medium | [LC 626](https://leetcode.com/problems/exchange-seats/) |
+| # | Problem | Difficulty | LeetCode | StrataScratch Alternative |
+|---|---------|------------|----------|---------------------------|
+| 1 | **Median Employee Salary** | Hard | [LC 569 🔒](https://leetcode.com/problems/median-employee-salary/) | [Median Salary](https://platform.stratascratch.com/coding/10353-workers-with-the-highest-salaries) |
+| 2 | **Find Cumulative Salary of an Employee** | Hard | [LC 579 🔒](https://leetcode.com/problems/find-cumulative-salary-of-an-employee/) | [Cumulative Salary](https://platform.stratascratch.com/coding/10314-revenue-over-time) |
+| 3 | **Game Play Analysis V** | Hard | [LC 1097 🔒](https://leetcode.com/problems/game-play-analysis-v/) | [User Retention](https://platform.stratascratch.com/coding/10322-finding-user-purchases) |
+| 4 | Customers Who Never Order | Easy | [LC 183](https://leetcode.com/problems/customers-who-never-order/) | [Inactive Customers](https://platform.stratascratch.com/coding/10183-total-order-cost) |
+| 5 | Department Highest Salary | Medium | [LC 184](https://leetcode.com/problems/department-highest-salary/) | [Highest Salary](https://platform.stratascratch.com/coding/10353-workers-with-the-highest-salaries) |
+| 6 | Exchange Seats | Medium | [LC 626](https://leetcode.com/problems/exchange-seats/) | [Swap Rows](https://platform.stratascratch.com/coding/10351-activity-rank) |
 
 ---
 
@@ -576,13 +575,13 @@ WHERE c.id NOT IN (
 
 ### Practice Problems
 
-| # | Problem | Difficulty | Link |
-|---|---------|------------|------|
-| 1 | **Sales by Day of the Week** | Hard | [LC 1479](https://leetcode.com/problems/sales-by-day-of-the-week/) |
-| 2 | **Find the Missing IDs** | Medium | [LC 1613](https://leetcode.com/problems/find-the-missing-ids/) |
-| 3 | Customers Who Never Order | Easy | [LC 183](https://leetcode.com/problems/customers-who-never-order/) |
-| 4 | Students and Examinations | Easy | [LC 1280](https://leetcode.com/problems/students-and-examinations/) |
-| 5 | Employees Not in Department | Easy | HackerRank |
+| # | Problem | Difficulty | LeetCode | StrataScratch Alternative |
+|---|---------|------------|----------|---------------------------|
+| 1 | **Sales by Day of the Week** | Hard | [LC 1479 🔒](https://leetcode.com/problems/sales-by-day-of-the-week/) | [Sales Analysis](https://platform.stratascratch.com/coding/10354-most-profitable-companies) |
+| 2 | **Find the Missing IDs** | Medium | [LC 1613 🔒](https://leetcode.com/problems/find-the-missing-ids/) | [Missing Records](https://platform.stratascratch.com/coding/10046-top-5-states-with-5-star-businesses) |
+| 3 | Customers Who Never Order | Easy | [LC 183](https://leetcode.com/problems/customers-who-never-order/) | [Inactive Customers](https://platform.stratascratch.com/coding/10183-total-order-cost) |
+| 4 | Students and Examinations | Easy | [LC 1280](https://leetcode.com/problems/students-and-examinations/) | [Student Exams](https://platform.stratascratch.com/coding/10351-activity-rank) |
+| 5 | Employees Not in Department | Easy | HackerRank | [Unassigned Employees](https://platform.stratascratch.com/coding/10353-workers-with-the-highest-salaries) |
 
 ---
 
@@ -627,15 +626,15 @@ GROUP BY department;
 
 ### Practice Problems
 
-| # | Problem | Difficulty | Link |
-|---|---------|------------|------|
-| 1 | **Average Salary: Departments vs Company** | Hard | [LC 615](https://leetcode.com/problems/average-salary-departments-vs-company/) |
-| 2 | **Students Report By Geography** | Hard | [LC 618](https://leetcode.com/problems/students-report-by-geography/) |
-| 3 | **Market Analysis II** | Hard | [LC 1159](https://leetcode.com/problems/market-analysis-ii/) |
-| 4 | Duplicate Emails | Easy | [LC 182](https://leetcode.com/problems/duplicate-emails/) |
-| 5 | Classes More Than 5 Students | Easy | [LC 596](https://leetcode.com/problems/classes-more-than-5-students/) |
-| 6 | Customers Who Bought All Products | Medium | [LC 1045](https://leetcode.com/problems/customers-who-bought-all-products/) |
-| 7 | Immediate Food Delivery II | Medium | [LC 1174](https://leetcode.com/problems/immediate-food-delivery-ii/) |
+| # | Problem | Difficulty | LeetCode | StrataScratch Alternative |
+|---|---------|------------|----------|---------------------------|
+| 1 | **Average Salary: Departments vs Company** | Hard | [LC 615 🔒](https://leetcode.com/problems/average-salary-departments-vs-company/) | [Dept vs Company Avg](https://platform.stratascratch.com/coding/10353-workers-with-the-highest-salaries) |
+| 2 | **Students Report By Geography** | Hard | [LC 618 🔒](https://leetcode.com/problems/students-report-by-geography/) | [Pivot Data](https://platform.stratascratch.com/coding/10354-most-profitable-companies) |
+| 3 | **Market Analysis II** | Hard | [LC 1159 🔒](https://leetcode.com/problems/market-analysis-ii/) | [Seller Analysis](https://platform.stratascratch.com/coding/10159-ranking-most-active-guests) |
+| 4 | Duplicate Emails | Easy | [LC 182](https://leetcode.com/problems/duplicate-emails/) | [Duplicate Emails](https://platform.stratascratch.com/coding/9891-duplicate-emails) |
+| 5 | Classes More Than 5 Students | Easy | [LC 596](https://leetcode.com/problems/classes-more-than-5-students/) | [Class Size](https://platform.stratascratch.com/coding/10351-activity-rank) |
+| 6 | Customers Who Bought All Products | Medium | [LC 1045 🔒](https://leetcode.com/problems/customers-who-bought-all-products/) | [Complete Purchases](https://platform.stratascratch.com/coding/10322-finding-user-purchases) |
+| 7 | Immediate Food Delivery II | Medium | [LC 1174 🔒](https://leetcode.com/problems/immediate-food-delivery-ii/) | [Delivery Analysis](https://platform.stratascratch.com/coding/10183-total-order-cost) |
 
 ---
 
