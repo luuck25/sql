@@ -27,7 +27,7 @@
    - [WHERE Behavior — Self-Join vs Window Functions](#81-where-behavior--self-join-vs-window-functions) — Why WHERE is safe with joins but destroys window data
    - [Filter in ON clause vs WHERE clause](#82-filter-in-on-clause-vs-where-clause) — LEFT JOIN: ON preserves rows, WHERE removes them
    - [LAG/LEAD with Data Gaps](#83-laglead-with-data-gaps) — Why row-based functions break with non-consecutive data
-   - [Running MAX vs LAG for Overlaps / Window Frame Defaults](#84-running-max-vs-lag-for-overlaps--window-frame-defaults) — Chain overlap detection + implicit ROWS BETWEEN behavior
+   - [Window Frame Defaults](#84-window-frame-defaults) — Implicit ROWS BETWEEN behavior + IIF vs CASE
 
 ---
 
@@ -743,45 +743,7 @@ The CASE checks act as a **gap guard** — only add the lagged salary if the mon
 
 ---
 
-## 8.4 Running MAX vs LAG for Overlaps / Window Frame Defaults
-
-Two key concepts from the interval merging pattern (LC #2494).
-
----
-
-### Why Running MAX, Not LAG
-
-**Problem:** Detect if current event overlaps with ANY previous event in the same group.
-
-**Sample data** — Hall 3:
-
-| # | start_day  | end_day    |
-|---|------------|------------|
-| A | 2023-01-01 | 2023-01-30 |
-| B | 2023-01-05 | 2023-01-10 |
-| C | 2023-01-15 | 2023-01-20 |
-
-**LAG(end_day) approach — WRONG:**
-
-| Event | LAG(end_day) | start <= LAG? | Verdict |
-|-------|-------------|---------------|----------|
-| A     | NULL        | —             | new group |
-| B     | Jan 30      | Jan 5 <= Jan 30 ✅ | overlap |
-| C     | **Jan 10**  | Jan 15 <= Jan 10? ❌ | **new group — WRONG!** |
-
-LAG sees B's end (Jan 10), not A's end (Jan 30). C appears non-overlapping.
-
-**Running MAX(end_day) approach — CORRECT:**
-
-| Event | MAX(prev ends) | start <= MAX? | Verdict |
-|-------|---------------|---------------|----------|
-| A     | NULL          | —             | new group |
-| B     | Jan 30        | Jan 5 <= Jan 30 ✅ | overlap |
-| C     | **Jan 30**    | Jan 15 <= Jan 30 ✅ | **overlap — CORRECT** |
-
-Running MAX remembers the longest-spanning event, not just the immediately previous one.
-
-> **Rule:** When checking overlap against ALL previous items (not just the last one), use running MAX, not LAG.
+## 8.4 Window Frame Defaults
 
 ---
 

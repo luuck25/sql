@@ -228,8 +228,6 @@ FROM transactions;
   ```
   Without `ORDER BY`, it computes the **total** over the entire partition (same value for every row). With `ORDER BY`, it's a **running/cumulative** sum.
 
-- **`IIF(cond, t, f)` = `CASE WHEN cond THEN t ELSE f END`.** SQL Server shorthand. Not ANSI standard — not available in PostgreSQL/MySQL. Only supports 2 branches; use `CASE` for multiple conditions.
-
 ### Practice Problems
 
 | # | Problem | Difficulty | LeetCode | StrataScratch Alternative |
