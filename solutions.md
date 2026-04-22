@@ -214,3 +214,280 @@ DENSE_RANK() OVER (PARTITION BY departmentId ORDER BY salary DESC)
 | `ROWS` vs `RANGE` | `ROWS` = row position. `RANGE` = value. Gaps break `ROWS`. |
 | `LAG` with gaps | LAG = row position. Also LAG the ordering column and verify. |
 | `DENSE_RANK` vs `RANK` | "Top N unique" → `DENSE_RANK`. `RANK` skips after ties. |
+
+---
+
+# Deep Dive: WHERE Behavior — Self-Join vs Window Functions
+
+> SQL executes in this logical order:
+> 1. `FROM / JOIN` ← pairs created here
+> 2. `WHERE` ← filter rows
+> 3. `GROUP BY`
+> 4. `HAVING`
+> 5. `SELECT` ← **window functions run here**
+> 6. `ORDER BY`
+>
+> Key insight: **WHERE runs AFTER joins (step 1→2) but BEFORE window functions (step 2→5)**
+
+**Sample data:** Monthly sales, compute rolling sum of **current + next 2 months**, output only months 1–3.
+
+| month | sales |
+|-------|-------|
+| 1     | 10    |
+| 2     | 20    |
+| 3     | 30    |
+| 4     | 40    |
+| 5     | 50    |
+
+**Expected output** (months 1–3 only):
+
+| month | rolling_sum | Calculation |
+|-------|-------------|-------------|
+| 1     | 60          | 10 + 20 + 30 |
+| 2     | 90          | 20 + 30 + 40 |
+| 3     | 120         | 30 + 40 + 50 |
+
+> ⚠️ Month 3 **needs** months 4 and 5 to compute its sum. This is where the approaches differ.
+
+---
+
+### Self-Join: WHERE is SAFE ✅
+
+```sql
+SELECT s1.month, SUM(s2.sales) AS rolling_sum
+FROM Sales s1
+JOIN Sales s2 ON s2.month BETWEEN s1.month AND s1.month + 2
+WHERE s1.month <= 3
+GROUP BY s1.month
+```
+
+**Step 1 (JOIN)** — all pairs created FIRST:
+
+| s1.month | s1.sales | s2.month | s2.sales | Match condition |
+|----------|----------|----------|----------|-----------------|
+| 1 | 10 | 1 | 10 | 1 BETWEEN 1 AND 3 ✓ |
+| 1 | 10 | 2 | 20 | 2 BETWEEN 1 AND 3 ✓ |
+| 1 | 10 | 3 | 30 | 3 BETWEEN 1 AND 3 ✓ |
+| 2 | 20 | 2 | 20 | 2 BETWEEN 2 AND 4 ✓ |
+| 2 | 20 | 3 | 30 | 3 BETWEEN 2 AND 4 ✓ |
+| 2 | 20 | 4 | 40 | 4 BETWEEN 2 AND 4 ✓ |
+| 3 | 30 | 3 | 30 | 3 BETWEEN 3 AND 5 ✓ |
+| 3 | 30 | 4 | 40 | 4 BETWEEN 3 AND 5 ✓ |
+| 3 | 30 | 5 | 50 | 5 BETWEEN 3 AND 5 ✓ |
+| 4 | 40 | 4 | 40 | 4 BETWEEN 4 AND 6 ✓ |
+| 4 | 40 | 5 | 50 | 5 BETWEEN 4 AND 6 ✓ |
+| 5 | 50 | 5 | 50 | 5 BETWEEN 5 AND 7 ✓ |
+
+**Step 2 (WHERE s1.month <= 3)** — removes s1.month 4,5 rows only. s2 data already attached:
+
+| s1.month | s2.month | s2.sales | Kept? |
+|----------|----------|----------|-------|
+| 1 | 1 | 10 | ✅ |
+| 1 | 2 | 20 | ✅ |
+| 1 | 3 | 30 | ✅ |
+| 2 | 2 | 20 | ✅ |
+| 2 | 3 | 30 | ✅ |
+| 2 | 4 | 40 | ✅ **← month 4 still here via s2!** |
+| 3 | 3 | 30 | ✅ |
+| 3 | 4 | 40 | ✅ **← month 4 still here via s2!** |
+| 3 | 5 | 50 | ✅ **← month 5 still here via s2!** |
+| ~~4~~ | ~~4~~ | ~~40~~ | ❌ filtered |
+| ~~4~~ | ~~5~~ | ~~50~~ | ❌ filtered |
+| ~~5~~ | ~~5~~ | ~~50~~ | ❌ filtered |
+
+**Step 3 (GROUP BY + SUM):**
+
+| s1.month | SUM(s2.sales) | Calculation |
+|----------|---------------|-------------|
+| 1 | **60** | 10 + 20 + 30 ✅ |
+| 2 | **90** | 20 + 30 + 40 ✅ |
+| 3 | **120** | 30 + 40 + 50 ✅ |
+
+→ `WHERE` only filters **s1** (output) rows. **s2** (joined data) is preserved — month 3 still sees months 4 and 5.
+
+---
+
+### Window Function: WHERE DESTROYS data ❌
+
+```sql
+-- ❌ WRONG
+SELECT month,
+    SUM(sales) OVER (ORDER BY month ROWS BETWEEN CURRENT ROW AND 2 FOLLOWING)
+FROM Sales
+WHERE month <= 3               -- step 2: months 4, 5 are GONE
+```
+
+**Step 2 (WHERE month <= 3)** — months 4, 5 removed from entire dataset:
+
+| month | sales | Survives WHERE? |
+|-------|-------|-----------------|
+| 1 | 10 | ✅ |
+| 2 | 20 | ✅ |
+| 3 | 30 | ✅ |
+| ~~4~~ | ~~40~~ | ❌ removed |
+| ~~5~~ | ~~50~~ | ❌ removed |
+
+**Step 5 (SELECT — window runs)** on the 3 surviving rows:
+
+| month | Window sees | SUM | Expected | Correct? |
+|-------|-------------|-----|----------|----------|
+| 1 | 1, 2, 3 | **60** | 60 | ✅ |
+| 2 | 2, 3 | **50** | 90 | ❌ **missing month 4!** |
+| 3 | 3 | **30** | 120 | ❌ **missing months 4, 5!** |
+
+→ WHERE removed months 4, 5 **before** the window could use them.
+
+---
+
+### ✅ FIX: Compute window FIRST in CTE, filter AFTER
+
+```sql
+WITH computed AS (
+    SELECT month,
+        SUM(sales) OVER (ORDER BY month
+            ROWS BETWEEN CURRENT ROW AND 2 FOLLOWING) AS rolling_sum
+    FROM Sales                 -- no WHERE → all 5 months available for window
+)
+SELECT * FROM computed
+WHERE month <= 3               -- filter AFTER window computed ✓
+```
+
+| month | rolling_sum | Correct? |
+|-------|-------------|----------|
+| 1 | **60** | ✅ |
+| 2 | **90** | ✅ |
+| 3 | **120** | ✅ |
+
+---
+
+### Summary
+
+| Approach | WHERE timing | Safe to filter directly? |
+|----------|-------------|--------------------------|
+| **Self-join** | After JOIN (step 1→2) | ✅ Yes — pairs already created. s2 data preserved. |
+| **Window function** | Before SELECT (step 2→5) | ❌ No — rows removed before window runs. Wrap in CTE first. |
+
+---
+
+### Bonus: Filter in ON clause vs WHERE clause
+
+Using the same data — but now with a **LEFT JOIN** to a Regions table. We want all months, but only show region info for months ≤ 3.
+
+**Sample data:**
+
+| month | sales |  | month | region |
+|-------|-------|--|-------|--------|
+| 1 | 10 |  | 1 | East |
+| 2 | 20 |  | 2 | West |
+| 3 | 30 |  | 3 | East |
+| 4 | 40 |  | 4 | North |
+| 5 | 50 |  | 5 | South |
+
+---
+
+**Option A: Filter in WHERE** — removes rows ❌
+
+```sql
+SELECT s.month, s.sales, r.region
+FROM Sales s
+LEFT JOIN Regions r ON s.month = r.month
+WHERE s.month <= 3
+```
+
+**Step 1 (LEFT JOIN)** — all 5 sales rows joined with region:
+
+| s.month | s.sales | r.region |
+|---------|---------|----------|
+| 1 | 10 | East |
+| 2 | 20 | West |
+| 3 | 30 | East |
+| 4 | 40 | North |
+| 5 | 50 | South |
+
+**Step 2 (WHERE month <= 3)** — removes months 4, 5 entirely:
+
+| s.month | s.sales | r.region | Kept? |
+|---------|---------|----------|-------|
+| 1 | 10 | East | ✅ |
+| 2 | 20 | West | ✅ |
+| 3 | 30 | East | ✅ |
+| ~~4~~ | ~~40~~ | ~~North~~ | ❌ gone |
+| ~~5~~ | ~~50~~ | ~~South~~ | ❌ gone |
+
+→ Months 4, 5 are **completely removed** from results. Only 3 rows returned.
+
+---
+
+**Option B: Filter in ON clause** — preserves rows ✅
+
+```sql
+SELECT s.month, s.sales, r.region
+FROM Sales s
+LEFT JOIN Regions r ON s.month = r.month AND s.month <= 3
+```
+
+**Step 1 (LEFT JOIN with ON condition)** — join only matches months ≤ 3, but LEFT JOIN keeps all s rows:
+
+| s.month | s.sales | r.region | Why? |
+|---------|---------|----------|------|
+| 1 | 10 | East | ON matched ✓ |
+| 2 | 20 | West | ON matched ✓ |
+| 3 | 30 | East | ON matched ✓ |
+| 4 | 40 | **NULL** | ON failed (4 > 3), LEFT JOIN keeps row with NULL |
+| 5 | 50 | **NULL** | ON failed (5 > 3), LEFT JOIN keeps row with NULL |
+
+→ All 5 rows returned. Months 4, 5 have NULL region but **are not removed**.
+
+**💡 Mental model:** `ON` condition ≈ runtime CTE on the right table. This gives the same result:
+
+```sql
+-- Option B equivalent using CTE on the right table:
+WITH filtered_regions AS (
+    SELECT * FROM Regions WHERE month <= 3
+)
+SELECT s.month, s.sales, r.region
+FROM Sales s
+LEFT JOIN filtered_regions r ON s.month = r.month
+```
+
+| s.month | s.sales | r.region | Why? |
+|---------|---------|----------|------|
+| 1 | 10 | East | matched in filtered_regions ✓ |
+| 2 | 20 | West | matched ✓ |
+| 3 | 30 | East | matched ✓ |
+| 4 | 40 | **NULL** | no month 4 in filtered_regions, LEFT JOIN → NULL |
+| 5 | 50 | **NULL** | no month 5 in filtered_regions, LEFT JOIN → NULL |
+
+→ **Same result as ON clause!** The CTE physically removes months 4,5 from the right table before joining. The ON clause achieves the same by refusing to match those pairs. Either way, LEFT JOIN preserves all left rows with NULLs.
+
+> **Key takeaway:** Think of extra conditions in `ON` as narrowing what the right table offers to match against — like joining against a filtered version of it. Left rows without a match survive with NULLs (LEFT JOIN). `WHERE` is different — it runs after the join and kills rows entirely.
+
+---
+
+### When does this matter?
+
+The ON vs WHERE difference is critical with **LEFT JOIN**:
+
+```sql
+-- ❌ Market Analysis II trap:
+FROM Users u
+LEFT JOIN ranked_data r ON r.seller_id = u.user_id
+WHERE r.item_brand = u.favorite_brand    -- NULLs filtered out! Users with < 2 sales vanish
+
+-- ✅ Fix: move condition to ON
+FROM Users u
+LEFT JOIN ranked_data r ON r.seller_id = u.user_id
+    AND r.item_brand = u.favorite_brand  -- non-matches get NULL, user row preserved
+```
+
+> **With INNER JOIN, WHERE and ON behave identically** — both filter. The difference only matters with LEFT/RIGHT/FULL joins.
+
+---
+
+### Complete Summary
+
+| Filter location | Timing | Effect on LEFT JOIN |
+|-----------------|--------|---------------------|
+| **`ON` clause** | During JOIN (step 1) | Non-matching rows get NULLs but **stay** |
+| **`WHERE` clause** | After JOIN (step 2) | Non-matching rows are **removed** |
+| **`WHERE` + window fn** | Before SELECT (step 2→5) | Rows gone before window computes — **wrap in CTE** |

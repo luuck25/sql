@@ -161,6 +161,50 @@ FROM Users u
 LEFT JOIN ranked_data r ON r.seller_id = u.user_id
 ORDER BY u.user_id;
 
+-- ============================================================================
+-- ALTERNATIVE: ISNULL approach
+-- ============================================================================
+-- Instead of CASE, use ISNULL to handle NULLs from the LEFT JOIN:
+
+-- SELECT 
+--     u.user_id AS seller_id,
+--     ISNULL(
+--         CASE WHEN u.favorite_brand = r.item_brand THEN 'yes' END,
+--         'no'
+--     ) AS [2nd_item_fav_brand]
+-- FROM Users u
+-- LEFT JOIN ranked_data r ON r.seller_id = u.user_id
+-- ORDER BY u.user_id;
+
+-- ============================================================================
+-- ALTERNATIVE: Brand comparison in ON clause
+-- ============================================================================
+-- Move the brand check into the JOIN condition. If brands don't match (or no
+-- 2nd item exists), the LEFT JOIN sets r columns to NULL → just check IS NOT NULL.
+
+-- SELECT 
+--     u.user_id AS seller_id,
+--     CASE 
+--         WHEN r.item_brand IS NOT NULL THEN 'yes'
+--         ELSE 'no'
+--     END AS [2nd_item_fav_brand]
+-- FROM Users u
+-- LEFT JOIN ranked_data r 
+--     ON r.seller_id = u.user_id
+--     AND u.favorite_brand = r.item_brand
+-- ORDER BY u.user_id;
+
+-- ============================================================================
+-- KEY CONCEPT: LEFT JOIN + WHERE trap
+-- ============================================================================
+-- ❌ WRONG: WHERE u.favorite_brand = r.item_brand
+--    → NULLs from LEFT JOIN are filtered out (sellers with < 2 sales disappear)
+--    → 'Lenovo' = NULL evaluates to UNKNOWN (falsy) → row dropped
+--
+-- ✅ FIX 1: Use CASE in SELECT (main solution above)
+-- ✅ FIX 2: Use ISNULL wrapper
+-- ✅ FIX 3: Move comparison into ON clause, check IS NOT NULL in SELECT
+
 -- DROP TABLE Orders;
 -- DROP TABLE Items;
 -- DROP TABLE Users;
