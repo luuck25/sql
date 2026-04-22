@@ -17,12 +17,17 @@
    - [Market Analysis II](#22-market-analysis-ii--lc-1159) — ROW_NUMBER to find Nth item per user (LC #1159)
 3. [Window Functions — Analytics (LAG / LEAD / SUM OVER)](#3-window-functions--analytics-lag--lead--sum-over)
    - [Cumulative Salary of an Employee](#31-cumulative-salary-of-an-employee--lc-579) — 3-month rolling sum with gaps (LC #579)
-4. [Other Problems (StrataScratch)](#4-other-problems-stratascratch)
-5. [Quick Reference — Common Pitfalls](#5-quick-reference--common-pitfalls)
-6. [Deep Dive — Key Learnings](#6-deep-dive--key-learnings)
-   - [WHERE Behavior — Self-Join vs Window Functions](#61-where-behavior--self-join-vs-window-functions) — Why WHERE is safe with joins but destroys window data
-   - [Filter in ON clause vs WHERE clause](#62-filter-in-on-clause-vs-where-clause) — LEFT JOIN: ON preserves rows, WHERE removes them
-   - [LAG/LEAD with Data Gaps](#63-laglead-with-data-gaps) — Why row-based functions break with non-consecutive data
+4. [Window Functions — Frames (ROWS BETWEEN)](#4-window-functions--frames-rows-between)
+   - [Merge Overlapping Events](#41-merge-overlapping-events-in-the-same-hall--lc-2494) — Running MAX + boundary detection for interval merging (LC #2494)
+5. [Gaps and Islands](#5-gaps-and-islands)
+   - [Human Traffic of Stadium](#51-human-traffic-of-stadium--lc-601) — id − ROW_NUMBER trick for consecutive grouping (LC #601)
+6. [Other Problems (StrataScratch)](#6-other-problems-stratascratch)
+7. [Quick Reference — Common Pitfalls](#7-quick-reference--common-pitfalls)
+8. [Deep Dive — Key Learnings](#8-deep-dive--key-learnings)
+   - [WHERE Behavior — Self-Join vs Window Functions](#81-where-behavior--self-join-vs-window-functions) — Why WHERE is safe with joins but destroys window data
+   - [Filter in ON clause vs WHERE clause](#82-filter-in-on-clause-vs-where-clause) — LEFT JOIN: ON preserves rows, WHERE removes them
+   - [LAG/LEAD with Data Gaps](#83-laglead-with-data-gaps) — Why row-based functions break with non-consecutive data
+   - [Running MAX vs LAG for Overlaps / Window Frame Defaults](#84-running-max-vs-lag-for-overlaps--window-frame-defaults) — Chain overlap detection + implicit ROWS BETWEEN behavior
 
 ---
 
@@ -209,7 +214,78 @@ DENSE_RANK() OVER (PARTITION BY departmentId ORDER BY salary DESC)
 
 ---
 
-# 4. Other Problems (StrataScratch)
+# 4. Window Functions — Frames (ROWS BETWEEN)
+
+> **Core idea:** `ROWS BETWEEN ... AND ...` defines a physical window of rows relative to the current row. Combined with aggregate functions like `MAX()`, `SUM()`, it enables running aggregates, boundary detection, and interval merging.
+
+---
+
+### 4.1 Merge Overlapping Events in the Same Hall — `LC #2494`
+
+**Approach (Boundary Detection → Group Assignment → Aggregate):**
+1. **Detect boundaries:** `MAX(end_day) OVER (... ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING)` = running max of all previous events' end dates. If current `start_day > prev_max_end` → new group.
+2. **Assign group IDs:** `SUM(boundary_flag) OVER (ORDER BY start_day)` = running sum → group number.
+3. **Merge:** `GROUP BY group_id` → `MIN(start_day)`, `MAX(end_day)`.
+
+```
+IIF(MAX(end_day) OVER (... ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) >= start_day, 0, 1)
+```
+
+**⚠️ Special Attention:**
+
+- **Running MAX, not LAG:** LAG sees only the previous row's `end_day`. A long-spanning event A=[Jan 1–30] followed by short B=[Jan 5–10] means LAG for C=[Jan 15–20] returns Jan 10 — wrong! Running MAX returns Jan 30 — correct.
+- **`>=` not `>`:** Inclusive date ranges. [Jan 13–14] and [Jan 14–17] share Jan 14 → overlap. `>=` catches this.
+- **`IIF` = shorthand `CASE`:** `IIF(condition, true_val, false_val)` ≡ `CASE WHEN condition THEN true_val ELSE false_val END`. SQL Server only (not ANSI standard).
+- **Flag direction matters:** 1=new group, 0=overlap. If reversed, non-overlapping rows don't increment the running sum → they collapse into one group.
+- **NULL handling for first row:** `MAX()` over an empty window = NULL. `NULL >= start_day` = UNKNOWN (falsy in IIF) → returns 1 (new group). No explicit `IS NULL` check needed.
+- **`SUM(x) OVER (ORDER BY ...)` without ROWS clause** = implicit `ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`. When `ORDER BY` is present, SQL Server defaults to a running sum from the start of the partition to the current row — not a total. This is the same as writing `ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` explicitly. Without `ORDER BY`, it computes the total over the entire partition.
+
+---
+
+### When to Use Window Frames
+- Interval/range merging → running MAX + boundary detection + running SUM
+- Rolling aggregates over physical rows → `ROWS BETWEEN N PRECEDING AND CURRENT ROW`
+- Need all previous rows excluding current → `ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING`
+- `ROWS` = physical row count. `RANGE` = value-based (limited in SQL Server)
+
+---
+
+# 5. Gaps and Islands
+
+> **Core idea:** Identify groups of consecutive values ("islands") separated by breaks ("gaps"). Classic trick: `value - ROW_NUMBER()` is constant for consecutive values.
+
+---
+
+### 5.1 Human Traffic of Stadium — `LC #601`
+
+**Approach (id − ROW_NUMBER trick):**
+1. Filter rows where `people >= 100`
+2. `ROW_NUMBER() OVER (ORDER BY id)` on filtered rows
+3. `id - ROW_NUMBER()` = constant for consecutive ids → group ID
+4. Keep groups with `COUNT(*) >= 3`
+
+```
+id:  5, 6, 7, 8    (consecutive)
+rn:  3, 4, 5, 6    (consecutive)
+id - rn: 2, 2, 2, 2  ← constant = one island
+```
+
+**⚠️ Special Attention:**
+- Works because both `id` and `ROW_NUMBER` increment by 1 for consecutive values — their difference stays constant
+- Gaps in `id` cause the difference to jump → new island
+- Filter BEFORE assigning ROW_NUMBER (so gaps appear in the numbering)
+- Alternative: self-join with 3 copies checking every triple of consecutive ids — works but less scalable for "N or more"
+
+---
+
+### When to Use Gaps and Islands
+- "N or more consecutive rows" matching a condition → filter + `id - ROW_NUMBER()`
+- Finding streaks, runs, or sequences in ordered data
+- Grouping contiguous date ranges or numeric sequences
+
+---
+
+# 6. Other Problems (StrataScratch)
 
 | # | Problem | Source | File |
 |---|---------|--------|------|
@@ -221,7 +297,7 @@ DENSE_RANK() OVER (PARTITION BY departmentId ORDER BY salary DESC)
 
 ---
 
-# 5. Quick Reference — Common Pitfalls
+# 7. Quick Reference — Common Pitfalls
 
 | Pitfall | Fix |
 |---------|-----|
@@ -236,14 +312,17 @@ DENSE_RANK() OVER (PARTITION BY departmentId ORDER BY salary DESC)
 | `ROWS` vs `RANGE` | `ROWS` = row position. `RANGE` = value. Gaps break `ROWS`. |
 | `LAG` with gaps | LAG = row position. Also LAG the ordering column and verify. |
 | `DENSE_RANK` vs `RANK` | "Top N unique" → `DENSE_RANK`. `RANK` skips after ties. |
+| `IIF` vs `CASE` | `IIF(cond, t, f)` = `CASE WHEN cond THEN t ELSE f END`. SQL Server only, not ANSI. |
+| `SUM() OVER (ORDER BY)` default frame | With `ORDER BY` → implicit `ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` (running sum). Without `ORDER BY` → total over partition. |
+| Running MAX vs LAG for overlaps | LAG sees only previous row. Running MAX sees all prior rows — catches long-spanning intervals. |
 
 ---
 
-# 6. Deep Dive — Key Learnings
+# 8. Deep Dive — Key Learnings
 
 ---
 
-## 6.1 WHERE Behavior — Self-Join vs Window Functions
+## 8.1 WHERE Behavior — Self-Join vs Window Functions
 
 > SQL executes in this logical order:
 > 1. `FROM / JOIN` ← pairs created here
@@ -395,7 +474,7 @@ WHERE month <= 3               -- filter AFTER window computed ✓
 
 ---
 
-## 6.2 Filter in ON clause vs WHERE clause
+## 8.2 Filter in ON clause vs WHERE clause
 
 Using the same data — but now with a **LEFT JOIN** to a Regions table. We want all months, but only show region info for months ≤ 3.
 
@@ -520,7 +599,7 @@ LEFT JOIN ranked_data r ON r.seller_id = u.user_id
 
 ---
 
-## 6.3 LAG/LEAD with Data Gaps
+## 8.3 LAG/LEAD with Data Gaps
 
 `LAG` and `LEAD` navigate by **row position**, not by **value**. When data has gaps (non-consecutive months, missing dates), they silently return the wrong row.
 
@@ -661,3 +740,90 @@ The CASE checks act as a **gap guard** — only add the lagged salary if the mon
 | `RANGE BETWEEN N PRECEDING` | ✅ | ❌ | Matches by value, but not supported in SQL Server |
 | **Self-join** with BETWEEN | ✅ | ✅ | **Best approach** — joins by actual values |
 | **LAG + month verification** | ✅ | ✅ | Works but verbose — must LAG both value and ordering column |
+
+---
+
+## 8.4 Running MAX vs LAG for Overlaps / Window Frame Defaults
+
+Two key concepts from the interval merging pattern (LC #2494).
+
+---
+
+### Why Running MAX, Not LAG
+
+**Problem:** Detect if current event overlaps with ANY previous event in the same group.
+
+**Sample data** — Hall 3:
+
+| # | start_day  | end_day    |
+|---|------------|------------|
+| A | 2023-01-01 | 2023-01-30 |
+| B | 2023-01-05 | 2023-01-10 |
+| C | 2023-01-15 | 2023-01-20 |
+
+**LAG(end_day) approach — WRONG:**
+
+| Event | LAG(end_day) | start <= LAG? | Verdict |
+|-------|-------------|---------------|----------|
+| A     | NULL        | —             | new group |
+| B     | Jan 30      | Jan 5 <= Jan 30 ✅ | overlap |
+| C     | **Jan 10**  | Jan 15 <= Jan 10? ❌ | **new group — WRONG!** |
+
+LAG sees B's end (Jan 10), not A's end (Jan 30). C appears non-overlapping.
+
+**Running MAX(end_day) approach — CORRECT:**
+
+| Event | MAX(prev ends) | start <= MAX? | Verdict |
+|-------|---------------|---------------|----------|
+| A     | NULL          | —             | new group |
+| B     | Jan 30        | Jan 5 <= Jan 30 ✅ | overlap |
+| C     | **Jan 30**    | Jan 15 <= Jan 30 ✅ | **overlap — CORRECT** |
+
+Running MAX remembers the longest-spanning event, not just the immediately previous one.
+
+> **Rule:** When checking overlap against ALL previous items (not just the last one), use running MAX, not LAG.
+
+---
+
+### SUM() OVER (ORDER BY ...) — Implicit Window Frame
+
+SQL Server applies a **default window frame** when `ORDER BY` is present:
+
+```sql
+-- These two are IDENTICAL:
+SUM(x) OVER (PARTITION BY hall_id ORDER BY start_day)
+SUM(x) OVER (PARTITION BY hall_id ORDER BY start_day ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)
+```
+
+This makes it a **running/cumulative sum** — each row's result includes all rows from the start of the partition up to and including the current row.
+
+**Without ORDER BY** — completely different behavior:
+
+```sql
+-- This computes the TOTAL sum over the entire partition (same value for every row):
+SUM(x) OVER (PARTITION BY hall_id)
+```
+
+| Syntax | Frame | Behavior |
+|--------|-------|----------|
+| `SUM(x) OVER (ORDER BY col)` | Implicit `ROWS UNBOUNDED PRECEDING TO CURRENT ROW` | Running sum |
+| `SUM(x) OVER ()` | Entire partition | Total sum (same for all rows) |
+| `SUM(x) OVER (PARTITION BY p)` | Entire partition | Total per partition |
+
+> **Key takeaway:** `ORDER BY` inside `OVER()` silently adds a frame that makes aggregates cumulative. This is why `SUM(overlap) OVER (ORDER BY start_day)` works as a running group counter without needing an explicit `ROWS BETWEEN` clause.
+
+---
+
+### IIF vs CASE
+
+`IIF` is SQL Server shorthand for a simple two-branch `CASE`:
+
+```sql
+-- These are identical:
+IIF(condition, true_value, false_value)
+CASE WHEN condition THEN true_value ELSE false_value END
+```
+
+- **SQL Server only** — not ANSI standard, not available in PostgreSQL/MySQL
+- Only supports 2 branches (true/false). For multiple conditions, use `CASE`
+- Useful for compact inline flags like overlap detection: `IIF(max_end >= start, 0, 1)`

@@ -219,6 +219,17 @@ SELECT
 FROM transactions;
 ```
 
+### Key Gotchas
+
+- **`SUM(x) OVER (ORDER BY ...)` = implicit running sum.** When `ORDER BY` is present, SQL Server defaults to `ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`. These two are identical:
+  ```sql
+  SUM(overlap) OVER (PARTITION BY hall_id ORDER BY start_day)
+  SUM(overlap) OVER (PARTITION BY hall_id ORDER BY start_day ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)
+  ```
+  Without `ORDER BY`, it computes the **total** over the entire partition (same value for every row). With `ORDER BY`, it's a **running/cumulative** sum.
+
+- **`IIF(cond, t, f)` = `CASE WHEN cond THEN t ELSE f END`.** SQL Server shorthand. Not ANSI standard — not available in PostgreSQL/MySQL. Only supports 2 branches; use `CASE` for multiple conditions.
+
 ### Practice Problems
 
 | # | Problem | Difficulty | LeetCode | StrataScratch Alternative |
