@@ -223,22 +223,17 @@ DENSE_RANK() OVER (PARTITION BY departmentId ORDER BY salary DESC)
 ### 4.1 Merge Overlapping Events in the Same Hall — `LC #2494`
 
 **Approach (Boundary Detection → Group Assignment → Aggregate):**
-1. **Detect boundaries:** `MAX(end_day) OVER (... ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING)` = running max of all previous events' end dates. If current `start_day > prev_max_end` → new group.
-2. **Assign group IDs:** `SUM(boundary_flag) OVER (ORDER BY start_day)` = running sum → group number.
+1. **Detect boundaries:** `IIF(MAX(end_day) OVER (... ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) >= start_day, 0, 1)` — running MAX of all previous end dates vs current start. Overlap → 0, new group → 1.
+2. **Assign group IDs:** `SUM(flag) OVER (ORDER BY start_day)` — running sum of flags = group number.
 3. **Merge:** `GROUP BY group_id` → `MIN(start_day)`, `MAX(end_day)`.
 
-```
-IIF(MAX(end_day) OVER (... ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) >= start_day, 0, 1)
-```
-
 **⚠️ Special Attention:**
-
-- **Running MAX, not LAG:** LAG sees only the previous row's `end_day`. A long-spanning event A=[Jan 1–30] followed by short B=[Jan 5–10] means LAG for C=[Jan 15–20] returns Jan 10 — wrong! Running MAX returns Jan 30 — correct.
-- **`>=` not `>`:** Inclusive date ranges. [Jan 13–14] and [Jan 14–17] share Jan 14 → overlap. `>=` catches this.
-- **`IIF` = shorthand `CASE`:** `IIF(condition, true_val, false_val)` ≡ `CASE WHEN condition THEN true_val ELSE false_val END`. SQL Server only (not ANSI standard).
-- **Flag direction matters:** 1=new group, 0=overlap. If reversed, non-overlapping rows don't increment the running sum → they collapse into one group.
-- **NULL handling for first row:** `MAX()` over an empty window = NULL. `NULL >= start_day` = UNKNOWN (falsy in IIF) → returns 1 (new group). No explicit `IS NULL` check needed.
-- **`SUM(x) OVER (ORDER BY ...)` without ROWS clause** = implicit `ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`. When `ORDER BY` is present, SQL Server defaults to a running sum from the start of the partition to the current row — not a total. This is the same as writing `ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` explicitly. Without `ORDER BY`, it computes the total over the entire partition.
+- **Running MAX, not LAG:** LAG only sees previous row's end. Running MAX catches long-spanning events (A=[Jan 1–30] covers C=[Jan 15–20], but LAG returns B's end Jan 10).
+- **`>=` not `>`:** Inclusive date ranges — shared boundary day = overlap.
+- **Flag direction:** 1=new group, 0=overlap. Reversing breaks it — non-overlapping rows won't increment.
+- **NULL first row:** `MAX()` over empty window = NULL. `NULL >= x` = falsy → IIF returns 1 (new group automatically).
+- **`IIF`** = `CASE WHEN ... THEN ... ELSE ... END` (SQL Server shorthand, not ANSI).
+- **`SUM() OVER (ORDER BY ...)`** = implicit `ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` (running sum, not total).
 
 ---
 
