@@ -1,0 +1,6 @@
+{
+    "diffEditor.codeLens": true,
+    "files.watcherExclude": {
+        "**/target": true
+    }
+}

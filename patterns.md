@@ -4,6 +4,8 @@
 
 ---
 
+https://github.com/sarvex/leetcode-coffeescript/blob/main/solution/1600-1699/1645.Hopper%20Company%20Queries%20II/README_EN.md
+
 ## Table of Contents
 
 1. [Recursive CTEs](#1-recursive-ctes)
