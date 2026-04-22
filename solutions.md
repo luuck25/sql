@@ -19,15 +19,20 @@
    - [Cumulative Salary of an Employee](#31-cumulative-salary-of-an-employee--lc-579) — 3-month rolling sum with gaps (LC #579)
 4. [Window Functions — Frames (ROWS BETWEEN)](#4-window-functions--frames-rows-between)
    - [Merge Overlapping Events](#41-merge-overlapping-events-in-the-same-hall--lc-2494) — Running MAX + boundary detection for interval merging (LC #2494)
+   - [Last Person to Fit in the Bus](#42-last-person-to-fit-in-the-bus--lc-1204) — Running SUM + TOP 1 threshold (LC #1204)
 5. [Gaps and Islands](#5-gaps-and-islands)
    - [Human Traffic of Stadium](#51-human-traffic-of-stadium--lc-601) — id − ROW_NUMBER trick for consecutive grouping (LC #601)
-6. [Other Problems (StrataScratch)](#6-other-problems-stratascratch)
-7. [Quick Reference — Common Pitfalls](#7-quick-reference--common-pitfalls)
-8. [Deep Dive — Key Learnings](#8-deep-dive--key-learnings)
-   - [WHERE Behavior — Self-Join vs Window Functions](#81-where-behavior--self-join-vs-window-functions) — Why WHERE is safe with joins but destroys window data
-   - [Filter in ON clause vs WHERE clause](#82-filter-in-on-clause-vs-where-clause) — LEFT JOIN: ON preserves rows, WHERE removes them
-   - [LAG/LEAD with Data Gaps](#83-laglead-with-data-gaps) — Why row-based functions break with non-consecutive data
-   - [Window Frame Defaults](#84-window-frame-defaults) — Implicit ROWS BETWEEN behavior + IIF vs CASE
+   - [Report Contiguous Dates](#52-report-contiguous-dates--lc-1225) — UNION ALL + DATEADD date-island grouping (LC #1225)
+6. [Date Functions](#6-date-functions)
+   - [Game Play Analysis V](#61-game-play-analysis-v--lc-1097) — Install date + day-1 retention with DATEADD/DATEDIFF (LC #1097)
+   - [Sales by Day of the Week](#62-sales-by-day-of-the-week--lc-1479) — DATENAME + conditional aggregation pivot (LC #1479)
+7. [Other Problems (StrataScratch)](#7-other-problems-stratascratch)
+8. [Quick Reference — Common Pitfalls](#8-quick-reference--common-pitfalls)
+9. [Deep Dive — Key Learnings](#9-deep-dive--key-learnings)
+   - [WHERE Behavior — Self-Join vs Window Functions](#91-where-behavior--self-join-vs-window-functions) — Why WHERE is safe with joins but destroys window data
+   - [Filter in ON clause vs WHERE clause](#92-filter-in-on-clause-vs-where-clause) — LEFT JOIN: ON preserves rows, WHERE removes them
+   - [LAG/LEAD with Data Gaps](#93-laglead-with-data-gaps) — Why row-based functions break with non-consecutive data
+   - [Window Frame Defaults](#94-window-frame-defaults) — Implicit ROWS BETWEEN behavior + IIF vs CASE
 
 ---
 
@@ -237,10 +242,27 @@ DENSE_RANK() OVER (PARTITION BY departmentId ORDER BY salary DESC)
 
 ---
 
+---
+
+### 4.2 Last Person to Fit in the Bus — `LC #1204`
+
+**Approach:**
+1. `SUM(weight) OVER (ORDER BY turn)` = cumulative weight per boarding order.
+2. Filter `cumulative_weight <= 1000`, take `TOP 1 ... ORDER BY turn DESC`.
+
+**⚠️ Special Attention:**
+- `SUM() OVER (ORDER BY turn)` = implicit running sum (not total) — same default frame concept as §4.1.
+- `TOP N` executes **after** `ORDER BY`, not during `SELECT` — it clips the sorted result.
+- Alternative without TOP: `WHERE turn = (SELECT MAX(turn) ... WHERE cumulative_weight <= 1000)`.
+- Self-join alternative (no window): `JOIN Queue q2 ON q2.turn <= q1.turn` → `GROUP BY` → `HAVING SUM(q2.weight) <= 1000`.
+
+---
+
 ### When to Use Window Frames
 - Interval/range merging → running MAX + boundary detection + running SUM
 - Rolling aggregates over physical rows → `ROWS BETWEEN N PRECEDING AND CURRENT ROW`
 - Need all previous rows excluding current → `ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING`
+- Cumulative threshold ("last row before limit") → running SUM + filter
 - `ROWS` = physical row count. `RANGE` = value-based (limited in SQL Server)
 
 ---
@@ -273,14 +295,77 @@ id - rn: 2, 2, 2, 2  ← constant = one island
 
 ---
 
+---
+
+### 5.2 Report Contiguous Dates — `LC #1225`
+
+**Approach:**
+1. `UNION ALL` Failed and Succeeded tables with a `period_state` label.
+2. `ROW_NUMBER() OVER (PARTITION BY period_state ORDER BY date)` → rn.
+3. `DATEADD(DAY, -rn, date)` = constant for consecutive dates within same state → group ID.
+4. `GROUP BY period_state, grp` → `MIN(date)`, `MAX(date)`.
+
+**⚠️ Special Attention:**
+- **Must PARTITION BY state:** Without it, different states can produce the same `date - rn` value and merge incorrectly.
+- **DATEADD, not DAY():** `DAY(date) - rn` only extracts day-of-month (1–31) — breaks across month boundaries. `DATEADD(DAY, -rn, date)` works on the full date.
+- Alternative: process each table in separate CTEs, then UNION ALL the grouped results — avoids PARTITION BY but duplicates logic.
+
+---
+
 ### When to Use Gaps and Islands
 - "N or more consecutive rows" matching a condition → filter + `id - ROW_NUMBER()`
 - Finding streaks, runs, or sequences in ordered data
 - Grouping contiguous date ranges or numeric sequences
+- Multiple states interleaved → PARTITION BY state in the ROW_NUMBER
 
 ---
 
-# 6. Other Problems (StrataScratch)
+# 6. Date Functions
+
+> **Core idea:** `DATEADD`, `DATEDIFF`, `DATENAME`, `DATEPART` for date arithmetic, comparison, and extraction. Key for retention analysis, pivoting by time period, and gap detection.
+
+---
+
+### 6.1 Game Play Analysis V — `LC #1097`
+
+**Approach:**
+1. `MIN(event_date) OVER (PARTITION BY player_id)` = install date per player (attached to every row).
+2. `COUNT(DISTINCT CASE WHEN event_date = install_dt THEN player_id END)` = installs per date.
+3. `COUNT(DISTINCT CASE WHEN event_date = DATEADD(DAY, 1, install_dt) THEN player_id END)` = retained.
+4. Retention = retained / installs, `ROUND(..., 2)`.
+
+**⚠️ Special Attention:**
+- **DATEADD vs DATEDIFF for next-day check:** `event_date = DATEADD(DAY, 1, install_dt)` or `DATEDIFF(DAY, install_dt, event_date) = 1` — both work.
+- **DATEDIFF argument order:** `DATEDIFF(DAY, start, end)` = `end - start`. Swapping gives negative/wrong results.
+- **CAST to DECIMAL for division:** `COUNT` returns INT. `1/2 = 0`. Use `CAST(... AS DECIMAL(10,2))` or multiply by `1.0`.
+- **MIN() OVER vs GROUP BY:** Window version attaches install_dt to every row without collapsing — enables single-pass counting with CASE.
+
+---
+
+### 6.2 Sales by Day of the Week — `LC #1479`
+
+**Approach:**
+1. LEFT JOIN Items to Orders (preserve categories with no orders).
+2. `DATENAME(WEEKDAY, order_date)` → day name string.
+3. Pivot: `SUM(CASE WHEN day = 'Monday' THEN quantity ELSE 0 END) AS Monday` — one per day.
+
+**⚠️ Special Attention:**
+- **DATENAME vs DATEPART:** `DATENAME(WEEKDAY, ...)` → `'Monday'` (string). `DATEPART(WEEKDAY, ...)` → `2` (int, locale-dependent).
+- **LEFT JOIN from Items:** Categories with zero orders (T-Shirt) must still appear → Items is the base table.
+- **ELSE 0, not ELSE NULL:** `SUM` of NULLs = NULL, but `SUM` of zeros = 0. Use `ELSE 0` in CASE for clean output.
+- This is a **Pivoting** problem that uses date functions — crossover of Date Functions + conditional aggregation.
+
+---
+
+### When to Use Date Functions
+- Day-1 / Day-N retention → DATEADD + comparison or DATEDIFF
+- Pivot by weekday/month → DATENAME or DATEPART + conditional aggregation
+- Date gaps detection → DATEADD in gaps-and-islands pattern
+- Month-end logic → EOMONTH
+
+---
+
+# 7. Other Problems (StrataScratch)
 
 | # | Problem | Source | File |
 |---|---------|--------|------|
@@ -292,7 +377,7 @@ id - rn: 2, 2, 2, 2  ← constant = one island
 
 ---
 
-# 7. Quick Reference — Common Pitfalls
+# 8. Quick Reference — Common Pitfalls
 
 | Pitfall | Fix |
 |---------|-----|
@@ -313,11 +398,11 @@ id - rn: 2, 2, 2, 2  ← constant = one island
 
 ---
 
-# 8. Deep Dive — Key Learnings
+# 9. Deep Dive — Key Learnings
 
 ---
 
-## 8.1 WHERE Behavior — Self-Join vs Window Functions
+## 9.1 WHERE Behavior — Self-Join vs Window Functions
 
 > SQL executes in this logical order:
 > 1. `FROM / JOIN` ← pairs created here
@@ -469,7 +554,7 @@ WHERE month <= 3               -- filter AFTER window computed ✓
 
 ---
 
-## 8.2 Filter in ON clause vs WHERE clause
+## 9.2 Filter in ON clause vs WHERE clause
 
 Using the same data — but now with a **LEFT JOIN** to a Regions table. We want all months, but only show region info for months ≤ 3.
 
@@ -594,7 +679,7 @@ LEFT JOIN ranked_data r ON r.seller_id = u.user_id
 
 ---
 
-## 8.3 LAG/LEAD with Data Gaps
+## 9.3 LAG/LEAD with Data Gaps
 
 `LAG` and `LEAD` navigate by **row position**, not by **value**. When data has gaps (non-consecutive months, missing dates), they silently return the wrong row.
 
@@ -738,7 +823,7 @@ The CASE checks act as a **gap guard** — only add the lagged salary if the mon
 
 ---
 
-## 8.4 Window Frame Defaults
+## 9.4 Window Frame Defaults
 
 ---
 
