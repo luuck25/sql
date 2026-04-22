@@ -22,6 +22,7 @@
 6. [Deep Dive — Key Learnings](#6-deep-dive--key-learnings)
    - [WHERE Behavior — Self-Join vs Window Functions](#61-where-behavior--self-join-vs-window-functions) — Why WHERE is safe with joins but destroys window data
    - [Filter in ON clause vs WHERE clause](#62-filter-in-on-clause-vs-where-clause) — LEFT JOIN: ON preserves rows, WHERE removes them
+   - [LAG/LEAD with Data Gaps](#63-laglead-with-data-gaps) — Why row-based functions break with non-consecutive data
 
 ---
 
@@ -516,3 +517,147 @@ LEFT JOIN ranked_data r ON r.seller_id = u.user_id
 | **`ON` clause** | During JOIN (step 1) | Non-matching rows get NULLs but **stay** |
 | **`WHERE` clause** | After JOIN (step 2) | Non-matching rows are **removed** |
 | **`WHERE` + window fn** | Before SELECT (step 2→5) | Rows gone before window computes — **wrap in CTE** |
+
+---
+
+## 6.3 LAG/LEAD with Data Gaps
+
+`LAG` and `LEAD` navigate by **row position**, not by **value**. When data has gaps (non-consecutive months, missing dates), they silently return the wrong row.
+
+---
+
+### The Problem
+
+**Sample data** — Employee 1's salary by month (note: months 5, 6 are missing):
+
+| month | salary |
+|-------|--------|
+| 1     | 20     |
+| 2     | 30     |
+| 3     | 40     |
+| 4     | 60     |
+| 7     | 90     |
+| 8     | 130    |
+
+**Goal:** For each month, sum current + previous 2 months' salaries.
+
+---
+
+### ❌ LAG alone — gives wrong results with gaps
+
+```sql
+SELECT month, salary,
+    LAG(salary, 1, 0) OVER (ORDER BY month) AS prev_1,
+    LAG(salary, 2, 0) OVER (ORDER BY month) AS prev_2
+FROM Employee WHERE id = 1
+```
+
+| month | salary | prev_1 | prev_2 | LAG thinks | Actually is | Correct? |
+|-------|--------|--------|--------|------------|-------------|----------|
+| 1     | 20     | 0      | 0      | — | — | ✅ |
+| 2     | 30     | 20     | 0      | prev row = month 1 | month 1 | ✅ |
+| 3     | 40     | 30     | 20     | prev row = month 2 | month 2 | ✅ |
+| 4     | 60     | 40     | 30     | prev row = month 3 | month 3 | ✅ |
+| 7     | 90     | **60** | **40** | prev row = month 4 | **month 6 (missing!)** | ❌ |
+| 8     | 130    | 90     | **60** | 2 rows back = month 4 | **month 6 (missing!)** | ❌ |
+
+For month 7: `LAG(salary, 1)` returns month 4's salary (60) because month 4 is the **previous row**. But month 7 - 1 = **month 6**, which doesn't exist. The sum should be 90 + 0 + 0 = **90**, not 90 + 60 + 40 = 190.
+
+---
+
+### ❌ ROWS BETWEEN — same problem
+
+```sql
+SUM(salary) OVER (ORDER BY month ROWS BETWEEN 2 PRECEDING AND CURRENT ROW)
+```
+
+| month | Window sees (rows) | SUM | Expected | Correct? |
+|-------|--------------------|-----|----------|----------|
+| 4     | months 2, 3, 4     | 130 | 130      | ✅ |
+| 7     | months **3, 4**, 7  | 170 | **90**   | ❌ grabs months 3,4 instead of 5,6 |
+| 8     | months **4, 7**, 8  | 280 | **220**  | ❌ grabs month 4 instead of 6 |
+
+`ROWS` counts physical rows, not month values. Same gap problem as LAG.
+
+---
+
+### ❌ RANGE BETWEEN 2 PRECEDING — would work, but...
+
+```sql
+-- Would conceptually solve it (matches by month VALUE, not row position)
+SUM(salary) OVER (ORDER BY month RANGE BETWEEN 2 PRECEDING AND CURRENT ROW)
+```
+
+This would correctly look at `month BETWEEN current_month - 2 AND current_month` — matching by value, not position. Month 7 would only find month 7 (5 and 6 don't exist) → sum = 90 ✅
+
+**But SQL Server does NOT support numeric offsets with RANGE.** Only these forms are allowed:
+- `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`
+- `RANGE BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING`
+- `RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING`
+
+> **PostgreSQL supports** `RANGE BETWEEN 2 PRECEDING AND CURRENT ROW` — so this is a valid solution there.
+
+---
+
+### ✅ Solution 1: Self-Join (best for SQL Server)
+
+```sql
+SELECT e1.month, SUM(e2.salary) AS cumulative
+FROM Employee e1
+JOIN Employee e2
+    ON e1.id = e2.id
+    AND e2.month BETWEEN e1.month - 2 AND e1.month
+WHERE e1.id = 1
+GROUP BY e1.month
+```
+
+Joins by **actual month values** — gaps don't matter:
+
+| e1.month | e2 matches | SUM | Correct? |
+|----------|------------|-----|----------|
+| 4 | months 2, 3, 4 | 130 | ✅ |
+| 7 | month 7 only (5,6 don't exist) | 90 | ✅ |
+| 8 | months 7, 8 (6 doesn't exist) | 220 | ✅ |
+
+---
+
+### ✅ Solution 2: LAG with month verification
+
+LAG the **month column** alongside salary, then verify consecutiveness:
+
+```sql
+WITH lagged AS (
+    SELECT month, salary,
+        LAG(salary, 1, 0) OVER (ORDER BY month) AS prev_sal,
+        LAG(salary, 2, 0) OVER (ORDER BY month) AS prev_prev_sal,
+        LAG(month,  1, 0) OVER (ORDER BY month) AS prev_month,
+        LAG(month,  2, 0) OVER (ORDER BY month) AS prev_prev_month
+    FROM Employee WHERE id = 1
+)
+SELECT month,
+    salary
+    + CASE WHEN prev_month = month - 1 THEN prev_sal ELSE 0 END
+    + CASE WHEN prev_prev_month = month - 2 THEN prev_prev_sal ELSE 0 END
+    AS cumulative
+FROM lagged
+```
+
+| month | prev_month | = month-1? | prev_prev_month | = month-2? | cumulative |
+|-------|------------|------------|-----------------|------------|------------|
+| 4 | 3 | ✅ add 40 | 2 | ✅ add 30 | 130 |
+| 7 | 4 | ❌ skip | 3 | ❌ skip | 90 |
+| 8 | 7 | ✅ add 90 | 4 | ❌ skip | 220 |
+
+The CASE checks act as a **gap guard** — only add the lagged salary if the month is actually consecutive.
+
+---
+
+### Summary: Approaches for Rolling Aggregates with Gaps
+
+| Approach | Handles gaps? | SQL Server? | Notes |
+|----------|--------------|-------------|-------|
+| `LAG(salary, N)` alone | ❌ | ✅ | Navigates by row position, not value |
+| `ROWS BETWEEN N PRECEDING` | ❌ | ✅ | Same — counts physical rows |
+| `RANGE BETWEEN N PRECEDING` | ✅ | ❌ | Matches by value, but not supported in SQL Server |
+| **Self-join** with BETWEEN | ✅ | ✅ | **Best approach** — joins by actual values |
+| **LAG + month verification** | ✅ | ✅ | Works but verbose — must LAG both value and ordering column |
