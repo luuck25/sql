@@ -7,21 +7,21 @@
 ## Table of Contents
 
 1. [Recursive CTE Problems](#1-recursive-cte-problems)
-   - [Generate Numbers 1 to N](#11-generate-numbers-1-to-n)
-   - [Employee Hierarchy](#12-employee-hierarchy)
-   - [Hopper Company Queries I — LC #1635](#13-hopper-company-queries-i--lc-1635)
-   - [Hopper Company Queries II — LC #1645](#14-hopper-company-queries-ii--lc-1645)
-   - [Hopper Company Queries III — LC #1651](#15-hopper-company-queries-iii--lc-1651)
+   - [Generate Numbers 1 to N](#11-generate-numbers-1-to-n) — Basic recursive CTE template
+   - [Employee Hierarchy](#12-employee-hierarchy) — Top-down & bottom-up tree traversal
+   - [Hopper Company Queries I](#13-hopper-company-queries-i--lc-1635) — Active drivers & rides per month (LC #1635)
+   - [Hopper Company Queries II](#14-hopper-company-queries-ii--lc-1645) — Working driver percentage (LC #1645)
+   - [Hopper Company Queries III](#15-hopper-company-queries-iii--lc-1651) — 3-month rolling average distance/duration (LC #1651)
 2. [Window Functions — Ranking](#2-window-functions--ranking)
-   - [Department Top Three Salaries — LC #185](#21-department-top-three-salaries--lc-185)
-   - [Market Analysis II — LC #1159](#22-market-analysis-ii--lc-1159)
+   - [Department Top Three Salaries](#21-department-top-three-salaries--lc-185) — DENSE_RANK to find top N per group (LC #185)
+   - [Market Analysis II](#22-market-analysis-ii--lc-1159) — ROW_NUMBER to find Nth item per user (LC #1159)
 3. [Window Functions — Analytics (LAG / LEAD / SUM OVER)](#3-window-functions--analytics-lag--lead--sum-over)
-   - [Cumulative Salary of an Employee — LC #579](#31-cumulative-salary-of-an-employee--lc-579)
+   - [Cumulative Salary of an Employee](#31-cumulative-salary-of-an-employee--lc-579) — 3-month rolling sum with gaps (LC #579)
 4. [Other Problems (StrataScratch)](#4-other-problems-stratascratch)
 5. [Quick Reference — Common Pitfalls](#5-quick-reference--common-pitfalls)
 6. [Deep Dive — Key Learnings](#6-deep-dive--key-learnings)
-   - [WHERE Behavior — Self-Join vs Window Functions](#61-where-behavior--self-join-vs-window-functions)
-   - [Filter in ON clause vs WHERE clause](#62-filter-in-on-clause-vs-where-clause)
+   - [WHERE Behavior — Self-Join vs Window Functions](#61-where-behavior--self-join-vs-window-functions) — Why WHERE is safe with joins but destroys window data
+   - [Filter in ON clause vs WHERE clause](#62-filter-in-on-clause-vs-where-clause) — LEFT JOIN: ON preserves rows, WHERE removes them
 
 ---
 
