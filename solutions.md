@@ -4,6 +4,32 @@
 
 ---
 
+## Table of Contents
+
+**1. [Recursive CTE Problems](#recursive-cte-problems)**
+   - 1.1 Generate Numbers 1 to N
+   - 1.2 Employee Hierarchy
+   - 1.3 Hopper Company Queries I — LC #1635
+   - 1.4 Hopper Company Queries II — LC #1645
+   - 1.5 Hopper Company Queries III — LC #1651
+
+**2. [Window Functions — Ranking](#window-functions--ranking)**
+   - 2.1 Department Top Three Salaries — LC #185
+   - 2.2 Market Analysis II — LC #1159
+
+**3. [Window Functions — Analytics (LAG / LEAD / SUM OVER)](#window-functions--analytics-lag--lead--sum-over)**
+   - 3.1 Cumulative Salary of an Employee — LC #579
+
+**4. [Other Problems (StrataScratch)](#other-problems-stratascratch)**
+
+**5. [Quick Reference — Common Pitfalls](#quick-reference--common-pitfalls)**
+
+**6. [Deep Dive — Key Learnings](#deep-dive--key-learnings)**
+   - 6.1 WHERE Behavior — Self-Join vs Window Functions
+   - 6.2 Filter in ON clause vs WHERE clause
+
+---
+
 # Recursive CTE Problems
 
 > **Core idea:** A recursive CTE has an anchor member (base case) + a recursive member that references itself with `UNION ALL`. Always needs a termination condition.
@@ -217,7 +243,11 @@ DENSE_RANK() OVER (PARTITION BY departmentId ORDER BY salary DESC)
 
 ---
 
-# Deep Dive: WHERE Behavior — Self-Join vs Window Functions
+# Deep Dive — Key Learnings
+
+---
+
+## 6.1 WHERE Behavior — Self-Join vs Window Functions
 
 > SQL executes in this logical order:
 > 1. `FROM / JOIN` ← pairs created here
@@ -369,7 +399,7 @@ WHERE month <= 3               -- filter AFTER window computed ✓
 
 ---
 
-### Bonus: Filter in ON clause vs WHERE clause
+## 6.2 Filter in ON clause vs WHERE clause
 
 Using the same data — but now with a **LEFT JOIN** to a Regions table. We want all months, but only show region info for months ≤ 3.
 
