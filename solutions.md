@@ -6,37 +6,37 @@
 
 ## Table of Contents
 
-**1. [Recursive CTE Problems](#recursive-cte-problems)**
+**1. [Recursive CTE Problems](#1-recursive-cte-problems)**
    - 1.1 Generate Numbers 1 to N
    - 1.2 Employee Hierarchy
    - 1.3 Hopper Company Queries I — LC #1635
    - 1.4 Hopper Company Queries II — LC #1645
    - 1.5 Hopper Company Queries III — LC #1651
 
-**2. [Window Functions — Ranking](#window-functions--ranking)**
+**2. [Window Functions — Ranking](#2-window-functions--ranking)**
    - 2.1 Department Top Three Salaries — LC #185
    - 2.2 Market Analysis II — LC #1159
 
-**3. [Window Functions — Analytics (LAG / LEAD / SUM OVER)](#window-functions--analytics-lag--lead--sum-over)**
+**3. [Window Functions — Analytics (LAG / LEAD / SUM OVER)](#3-window-functions--analytics-lag--lead--sum-over)**
    - 3.1 Cumulative Salary of an Employee — LC #579
 
-**4. [Other Problems (StrataScratch)](#other-problems-stratascratch)**
+**4. [Other Problems (StrataScratch)](#4-other-problems-stratascratch)**
 
-**5. [Quick Reference — Common Pitfalls](#quick-reference--common-pitfalls)**
+**5. [Quick Reference — Common Pitfalls](#5-quick-reference--common-pitfalls)**
 
-**6. [Deep Dive — Key Learnings](#deep-dive--key-learnings)**
+**6. [Deep Dive — Key Learnings](#6-deep-dive--key-learnings)**
    - 6.1 WHERE Behavior — Self-Join vs Window Functions
    - 6.2 Filter in ON clause vs WHERE clause
 
 ---
 
-# Recursive CTE Problems
+# 1. Recursive CTE Problems
 
 > **Core idea:** A recursive CTE has an anchor member (base case) + a recursive member that references itself with `UNION ALL`. Always needs a termination condition.
 
 ---
 
-### 1. Generate Numbers 1 to N
+### 1.1 Generate Numbers 1 to N
 
 **Approach:**
 - Anchor: `SELECT 1 AS n`
@@ -48,7 +48,7 @@
 
 ---
 
-### 2. Employee Hierarchy
+### 1.2 Employee Hierarchy
 
 **Approach:**
 - **Top-down:** Anchor = root manager → recursive step joins on `ManagerId`
@@ -61,7 +61,7 @@
 
 ---
 
-### 3. Hopper Company Queries I — `LC #1635`
+### 1.3 Hopper Company Queries I — `LC #1635`
 
 **Approach:**
 - Recursive CTE generates months 1–12
@@ -75,7 +75,7 @@
 
 ---
 
-### 4. Hopper Company Queries II — `LC #1645`
+### 1.4 Hopper Company Queries II — `LC #1645`
 
 **Approach:**
 - Same month-generation CTE
@@ -88,7 +88,7 @@
 
 ---
 
-### 5. Hopper Company Queries III — `LC #1651`
+### 1.5 Hopper Company Queries III — `LC #1651`
 
 **Approach (two solutions):**
 - **① Window function:** `ROWS BETWEEN CURRENT ROW AND 2 FOLLOWING`
@@ -110,13 +110,13 @@
 
 ---
 
-# Window Functions — Ranking
+# 2. Window Functions — Ranking
 
 > **Core idea:** `DENSE_RANK()`, `RANK()`, `ROW_NUMBER()` over a partition to assign rankings, then filter by rank.
 
 ---
 
-### 1. Department Top Three Salaries — `LC #185`
+### 2.1 Department Top Three Salaries — `LC #185`
 
 **Approach (two solutions):**
 - **① Subquery:** rank in subquery, filter `rnk <= 3` in outer query
@@ -137,7 +137,7 @@ DENSE_RANK() OVER (PARTITION BY departmentId ORDER BY salary DESC)
 
 ---
 
-### 2. Market Analysis II — `LC #1159`
+### 2.2 Market Analysis II — `LC #1159`
 
 **Approach:**
 - `ROW_NUMBER() OVER (PARTITION BY seller_id ORDER BY order_date ASC)` → find 2nd sold item
@@ -158,13 +158,13 @@ DENSE_RANK() OVER (PARTITION BY departmentId ORDER BY salary DESC)
 
 ---
 
-# Window Functions — Analytics (LAG / LEAD / SUM OVER)
+# 3. Window Functions — Analytics (LAG / LEAD / SUM OVER)
 
 > **Core idea:** `LAG`/`LEAD` access previous/next rows. `SUM() OVER(...)` computes running/sliding aggregates. Watch out for gaps in data.
 
 ---
 
-### 1. Cumulative Salary of an Employee — `LC #579`
+### 3.1 Cumulative Salary of an Employee — `LC #579`
 
 **Approach (two solutions):**
 - **① Self-join:**
@@ -213,7 +213,7 @@ DENSE_RANK() OVER (PARTITION BY departmentId ORDER BY salary DESC)
 
 ---
 
-# Other Problems (StrataScratch)
+# 4. Other Problems (StrataScratch)
 
 | # | Problem | Source | File |
 |---|---------|--------|------|
@@ -225,7 +225,7 @@ DENSE_RANK() OVER (PARTITION BY departmentId ORDER BY salary DESC)
 
 ---
 
-# Quick Reference — Common Pitfalls
+# 5. Quick Reference — Common Pitfalls
 
 | Pitfall | Fix |
 |---------|-----|
@@ -243,7 +243,7 @@ DENSE_RANK() OVER (PARTITION BY departmentId ORDER BY salary DESC)
 
 ---
 
-# Deep Dive — Key Learnings
+# 6. Deep Dive — Key Learnings
 
 ---
 
